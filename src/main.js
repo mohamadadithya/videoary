@@ -1,4 +1,4 @@
-import './css/main.css'
+import './css/main.scss'
 import { formatDuration } from './utils/helpers'
 
 const video = {
