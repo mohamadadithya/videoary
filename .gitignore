@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 public/videos/*.mp4
-public/captions/*.vtt
+public/captions/*
 public/posters/*.png
 
 # Editor directories and files

@@ -1,4 +1,4 @@
-export const formatDuration = (time) => {
+const formatDuration = (time) => {
     const seconds = Math.floor(time % 60).toLocaleString('en-US', { minimumIntegerDigits: 2 })
     const minutes = (Math.floor(time / 60) % 60)
     const hours = Math.floor(time / 3600)
@@ -8,3 +8,5 @@ export const formatDuration = (time) => {
         return `${minutes}:${seconds}`
     }
 }
+
+export { formatDuration }

@@ -1,25 +1,54 @@
-import './css/style.css'
-import { formatDuration } from './utils/formatDuration'
+import './css/main.css'
+import { formatDuration } from './utils/helpers'
 
 const video = {
-  src: 'serve-the-servants.mp4',
-  captions: 'serve-the-servants.vtt',
+  src: 'dumb',
   poster: null,
 }
 
-const playbackSpeeds = [0.25, 0.5, 0.7 , 1, 1.25, 1.5, 1.75, 2];
+const subtitles = [
+  {
+    short: 'en',
+    long: 'English'
+  },
+  {
+    short: 'pl',
+    long: 'Polish'
+  },
+  {
+    short: 'es',
+    long: 'Spanish'
+  },
+  {
+    short: 'de',
+    long: 'German'
+  },
+  {
+    short: 'ja',
+    long: 'Japanese'
+  },
+  {
+    short: 'id',
+    long: 'Indonesian'
+  }
+]
+
+const playbackSpeeds = [0.25, 0.5, 0.7 , 1, 1.25, 1.5, 1.75, 2]
 
 let isPlayed = false
 let currentVolume
-let playbackSpeed = 1;
+let playbackSpeed = 1
+let videoCaption = subtitles[0].short
 
 document.querySelector('#app').innerHTML = `
 <div class="container videoary" id="videoary">
   <div class="toast"></div>
   <img class="poster" ${video.poster ? `src="/posters/${video.poster}"` : ''} />
   <video data-ambient preload>
-    <source src="/videos/${video.src}" type="video/mp4" />
-    <track label="English" kind="subtitles" srclang="en" src="/captions/${video.captions}" default />
+    <source src="/videos/${video.src}.mp4" type="video/mp4" />
+    ${subtitles.map((caption) => {
+      return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="/captions/${video.src}/${caption.long.toLowerCase()}.vtt" default />`
+    }).join('')}
   </video>
   <div class="captions-wrapper"></div>
   <div class="videoary__bottom-panel">
@@ -67,11 +96,11 @@ document.querySelector('#app').innerHTML = `
       <li>
       <button type="button" class="flex justify-between items-center w-full">
         <span>
-          <i class="far fa-fw fa-gauge"></i>
-          Annotations
+          <i class="far fa-fw fa-closed-captioning"></i>
+          Subtitles/CC
         </span>
         <span>
-          Normal
+          ${subtitles[0].long}
           <i class="far fa-fw fa-chevron-right"></i>
         </span>
       </button>
@@ -86,7 +115,13 @@ document.querySelector('#app').innerHTML = `
         </span>
       </button>
     </li>
-    <ul class="playback-speed-list text-sm">
+    <ul class="settings-menu-panel text-sm">
+      <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Subtitles/CC</li>
+      ${subtitles.map((caption) => {
+        return `<li><button data-lang="${caption.short}" type="button" class="w-full text-left">${caption.long} <i class="fas fa-fw fa-check ${caption.short == videoCaption ? "" : "hidden"}"></i></button></li>`
+      }).join('')}
+    </ul>
+    <ul class="settings-menu-panel text-sm">
       <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Playback Speed</li>
       ${playbackSpeeds.map((speed) => {
         return `<li><button data-speed="${speed}" type="button" class="w-full text-left">${speed == 1 ? "Normal" : speed} <i class="fas fa-fw fa-check ${speed == playbackSpeed ? "" : "hidden"}"></i></button></li>`
@@ -113,35 +148,41 @@ const buttons = {
   picInPic: document.getElementById('pic-in-pic-button'),
   theater: document.getElementById('theater-button'),
   settings: document.getElementById('settings-button'),
-  playbackSpeed: container.querySelector('#playback-speed')
 }
 const settingsMenu = container.querySelector('.settings-menu')
 const playIcon = buttons.play.querySelector('i')
 const captionsWrapper = document.querySelector('.captions-wrapper')
-const playbackSpeedButtons = container.querySelectorAll('.playback-speed-list > li > button:not(.action)')
-const playbackSpeedList = settingsMenu.querySelector('.playback-speed-list')
 
 container.addEventListener('contextmenu', (e) => e.preventDefault())
 
 // Default
 bottomPanel.classList.add('showed-up')
-videoEl.textTracks[0].mode = 'hidden'
+const videoCaptions = document.querySelectorAll('track')
+videoCaptions.forEach(caption => caption.track.mode = "hidden")
 
-const textTrack = videoEl.textTracks[0]
-textTrack.addEventListener('cuechange', function () {
-  let cues = this.activeCues
+const captionsArray = Array.from(videoEl.textTracks)
+let selectedCaption = captionsArray.find(caption => caption.language == videoCaption)
 
-  if (cues.length > 0) {
-    captionsWrapper.textContent = cues[0].text
-  } else {
-    if (cues[0]?.endTime) {
-      captionsWrapper.textContent = '[Music]'
+const captionsAction = (caption) => {
+  videoCaptions.forEach(caption => caption.track.mode = "disabled")
+  caption.mode = "hidden"
+  caption.addEventListener('cuechange', function () {
+    let cues = this.activeCues
+  
+    if (cues.length > 0) {
+      captionsWrapper.textContent = cues[0].text
     } else {
-      captionsWrapper.textContent = ''
+      if (cues[0]?.endTime) {
+        captionsWrapper.textContent = '[Music]'
+      } else {
+        captionsWrapper.textContent = ''
+      }
     }
-  }
-  videoEl.addEventListener('ended', () => (captionsWrapper.textContent = ''))
-})
+    videoEl.addEventListener('ended', () => (captionsWrapper.textContent = ''))
+  })
+}
+
+captionsAction(selectedCaption)
 
 const showToast = (text) => {
   toast.classList.add('active')
@@ -242,6 +283,7 @@ const keyEvents = (e) => {
   showBottomPanel()
   setTimeout(() => {
     hideBottomPanel()
+    container.style.cursor = "none"
   }, 3500)
   if (e.keyCode == 39) {
     videoEl.currentTime += 5
@@ -264,7 +306,6 @@ const keyEvents = (e) => {
 }
 
 document.addEventListener('keydown', keyEvents)
-
 videoEl.addEventListener('click', playVideo)
 
 durationSlider.addEventListener('input', (e) => {
@@ -289,9 +330,8 @@ volumeSlider.addEventListener('input', (e) => {
   }
   changeMuteIcon()
 })
-volumeSlider.addEventListener('input', () =>
-  volumeSlider.classList.add('active'),
-)
+
+volumeSlider.addEventListener('input', () => volumeSlider.classList.add('active'))
 volumeSlider.addEventListener('click', (e) => e.stopPropagation())
 window.addEventListener('click', () => volumeSlider.classList.remove('active'))
 
@@ -309,7 +349,7 @@ const openSettings = (e) => {
   const icon = e.target
   icon.style.transition = '.3s all ease'
   settingsMenu.classList.toggle('active')
-  setTimeout(() => hidePlaybackSpeedList(), 300)
+  setTimeout(() => hideSettingsMenuPanel(), 300)
   const tooltips = container.querySelectorAll('div[role="tooltip"]')
   if(settingsMenu.classList.contains('active')) {
     tooltips.forEach(tip => tip.setAttribute('aria-disabled', true))
@@ -390,36 +430,69 @@ const theaterMode = async () => {
   }
 }
 
-buttons.playbackSpeed.addEventListener('click', () => {
-  settingsMenu.classList.add('hide')
-  playbackSpeedList.classList.add('show')
-  const playbackSpeedBack = playbackSpeedList.querySelector('button:is(.action)')
-  playbackSpeedBack.addEventListener('click', () => {
-    hidePlaybackSpeedList(playbackSpeedList)
+const settingsButtons = document.querySelectorAll('.settings-menu > li button')
+const settingsMenuPanels = document.querySelectorAll('.settings-menu-panel')
+
+document.addEventListener('click', (e) => {
+  if(e.target.closest('#settings-button') || e.target.closest('.settings-menu')) return
+  settingsMenu.classList.remove('active')
+  setTimeout(() => hideSettingsMenuPanel(), 300)
+})
+
+settingsButtons.forEach((button, index) => {
+  button.addEventListener('click', () => {
+    settingsMenu.classList.add('hide')
+    const panel = settingsMenuPanels[index]
+    panel.classList.add('show')
+    const backButton = panel.querySelector('button:is(.action)')
+    backButton.addEventListener('click', hideSettingsMenuPanel)
   })
 })
 
-const hidePlaybackSpeedList = () => {
-  playbackSpeedList.classList.remove('show')
+const hideSettingsMenuPanel = () => {
+  settingsMenuPanels.forEach(panel => panel.classList.remove('show'))
   settingsMenu.classList.remove('hide')
 }
 
-playbackSpeedButtons.forEach(button => {
-  button.addEventListener('click', function() {
-    playbackSpeedButtons.forEach(button => {
-      button.classList.remove('active')
-      const icon = button.querySelector('i')
-      icon.classList.add('hidden')
+const settingsPanelButtons = (panelIndex) => settingsMenuPanels[panelIndex].querySelectorAll('button:not(.action)')
+
+const playbackSpeedButtons = settingsPanelButtons(1)
+
+const settingsAction = (actionButtons, initVariable, dataEl, callback) => {
+  actionButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      actionButtons.forEach(button => {
+        button.classList.remove('active')
+        const icon = button.querySelector('i')
+        icon.classList.add('hidden')
+      })
+      this.classList.add('active')
+      const checkIcon = this.querySelector('i')
+      checkIcon.classList.remove('hidden')
+      hideSettingsMenuPanel()
+      
+      initVariable = this.getAttribute(dataEl)
+      callback(initVariable)
     })
-    this.classList.add('active')
-    playbackSpeed = this.getAttribute('data-speed')
-    videoEl.playbackRate = playbackSpeed
-    const checkIcon = this.querySelector('i')
-    checkIcon.classList.remove('hidden')
-    hidePlaybackSpeedList()
-    const indicatorEl = buttons.playbackSpeed.querySelector('span:nth-child(2)')
-    indicatorEl.innerHTML = `${`${playbackSpeed == 1 ? 'Normal' : playbackSpeed} <i class="far fa-fw fa-chevron-right"></i>`}`
   })
+}
+
+// For Playback Speed Changer
+settingsAction(playbackSpeedButtons, playbackSpeed, 'data-speed', (initVariable) => {
+  videoEl.playbackRate = initVariable
+  const indicatorEl = settingsButtons[1].querySelector('span:nth-child(2)')
+  indicatorEl.innerHTML = `${`${initVariable == 1 ? 'Normal' : initVariable} <i class="far fa-fw fa-chevron-right"></i>`}`
+})
+
+const captionsButtons = settingsPanelButtons(0)
+
+// For Subtitle Changer
+settingsAction(captionsButtons, videoCaption, 'data-lang', (initVariable) => {
+  videoCaption = initVariable
+  selectedCaption = captionsArray.find(caption => caption.language == videoCaption)
+  captionsAction(selectedCaption)
+  const indicatorEl = settingsButtons[0].querySelector('span:nth-child(2)')
+  indicatorEl.innerHTML = `${`${selectedCaption.label} <i class="far fa-fw fa-chevron-right"></i>`}`
 })
 
 buttons.play.addEventListener('click', playVideo)

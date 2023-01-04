@@ -405,11 +405,11 @@ body {
   display: none;
 }
 
-.videoary .settings-menu .playback-speed-list:not(.show) {
+.videoary .settings-menu .settings-menu-panel:not(.show) {
   display: none;
 }
 
-.videoary .settings-menu .playback-speed-list > li:nth-child(1) {
+.videoary .settings-menu .settings-menu-panel > li:nth-child(1) {
   color: white;
   padding: .2em .8em .8em;
   border-bottom: 1px solid rgb(245, 245, 245, .3);
