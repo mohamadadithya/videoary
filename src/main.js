@@ -207,7 +207,6 @@ const playVideo = () => {
   if (videoEl.paused) {
     playIcon.classList.replace('fa-play', 'fa-pause')
     videoEl.play()
-    touching()
     isPlayed = true
   } else {
     playIcon.classList.replace('fa-pause', 'fa-play')
@@ -261,22 +260,24 @@ videoEl.addEventListener('leavepictureinpicture', () => {
   }, 0)
 })
 
-const touching = () => {
-  setTimeout(() => {
-    container.style.cursor = "none"
+let idleTimer = null
+let idleState = false
+
+const idleWatch = (time) => {
+  clearTimeout(idleTimer)
+  if(idleState) showBottomPanel()
+  idleState = false
+  idleTimer = setTimeout(() => {
     hideBottomPanel()
-    videoEl.addEventListener('mousemove', () => {
-      container.style.cursor = "default"
-      showBottomPanel()
-    })
-  }, 3500)
+    idleState = true
+    container.style.cursor = "none"
+  }, time)
 }
 
-videoEl.addEventListener('mouseover', touching)
-videoEl.addEventListener('mousemove', touching)
+videoEl.addEventListener('mousemove', () => idleWatch(3500))
+videoEl.addEventListener('mouseover', showBottomPanel)
 bottomPanel.addEventListener('mouseover', showBottomPanel)
 container.addEventListener('mouseout', hideBottomPanel)
-videoEl.addEventListener('mouseout', hideBottomPanel)
 
 const keyEvents = (e) => {
   showBottomPanel()
@@ -410,6 +411,7 @@ const muteVolume = () => {
     videoEl.volume = 0
     volumeSlider.value = 0
   }
+  changeMuteIcon()
 }
 
 const theaterMode = async () => {
@@ -498,9 +500,6 @@ buttons.play.addEventListener('click', playVideo)
 buttons.fullscreen.addEventListener('click', openFullscreen)
 buttons.picInPic.addEventListener('click', pictureInPicture)
 buttons.captions.addEventListener('click', showCaptions)
-buttons.volume.addEventListener('click', () => {
-  muteVolume()
-  changeMuteIcon()
-})
+buttons.volume.addEventListener('click', muteVolume)
 buttons.theater.addEventListener('click', theaterMode)
 buttons.settings.addEventListener('click', openSettings)
