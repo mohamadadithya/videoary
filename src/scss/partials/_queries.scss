@@ -1,0 +1,25 @@
+@media (max-width: 470px) {
+    &>.captions-wrapper {
+        font-size: 0.8rem;
+    }
+
+    .actions-wrapper {
+        margin-top: 0.2em;
+    }
+
+    &__bottom-panel__actions {
+        display: flex;
+        align-items: center;
+        color: white;
+        list-style: none;
+        padding: 0 0.6em;
+
+        &>li>button {
+            font-size: 1rem;
+        }
+    }
+
+    &>.toast {
+        font-size: 0.6rem;
+    }
+}

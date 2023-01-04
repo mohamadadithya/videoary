@@ -119,8 +119,8 @@ body {
       list-style: none;
       padding: 0 1em;
 
-      & > li > button:hover~.tooltip:is([aria-disabled="false"]) {
-        opacity: 1;
+      & > li > button:hover ~ .tooltip:is([aria-disabled="false"]) {
+        display: block;
       }
 
       &:nth-child(2) .tooltip {
@@ -158,7 +158,7 @@ body {
       width: 0;
       opacity: 0;
       margin-left: 0.9em;
-      transition: 0.3s all ease;
+      transition: 0.3s all ease !important;
       cursor: pointer;
 
       &:is(.active, :hover) {
@@ -323,7 +323,7 @@ body {
       background-color: hsla(0, 0%, 30%, 0.7);
       padding: 3px 10px;
       white-space: nowrap;
-      opacity: 0;
+      display: none;
       font-size: 0.8rem;
     }
   }
@@ -407,58 +407,6 @@ body {
     }
   }
 
-  /* Utility Classes */
-  .w-full {
-    width: 100%;
-  }
-
-  .text-left {
-    text-align: left;
-  }
-
-  .text-sm {
-    font-size: 0.85rem;
-  }
-
-  .flex {
-    display: flex;
-  }
-
-  .hidden {
-    display: none;
-  }
-
-  .justify-between {
-    justify-content: space-between;
-  }
-
-  .items-center {
-    align-items: center;
-  }
-
-  @media (max-width: 470px) {
-    & > .captions-wrapper {
-      font-size: 0.8rem;
-    }
-
-    .actions-wrapper {
-      margin-top: 0.2em;
-    }
-
-    &__bottom-panel__actions {
-      display: flex;
-      align-items: center;
-      color: white;
-      list-style: none;
-      padding: 0 0.6em;
-
-      & > li >button {
-        font-size: 1rem;
-      }
-    }
-
-    & > .toast {
-      font-size: 0.6rem;
-    }
-  }
+  @import './partials/utils';
+  @import './partials/queries';
 }

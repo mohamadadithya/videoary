@@ -1,4 +1,4 @@
-import './css/main.scss'
+import './scss/main.scss'
 import { formatDuration } from './utils/helpers'
 
 const video = {
@@ -44,7 +44,7 @@ document.querySelector('#app').innerHTML = `
 <div class="container videoary" id="videoary">
   <div class="toast"></div>
   <img class="poster" ${video.poster ? `src="/posters/${video.poster}"` : ''} />
-  <video data-ambient preload>
+  <video preload>
     <source src="/videos/${video.src}.mp4" type="video/mp4" />
     ${subtitles.map((caption) => {
       return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="/captions/${video.src}/${caption.long.toLowerCase()}.vtt" default />`
@@ -230,9 +230,7 @@ videoEl.addEventListener('ended', () =>
 videoEl.addEventListener('timeupdate', () => {
   const time = videoEl.currentTime
 
-  durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(
-    videoEl.duration,
-  )}`
+  durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(videoEl.duration)}`
   durationSlider.value = time
 })
 
@@ -275,8 +273,9 @@ const touching = () => {
 }
 
 videoEl.addEventListener('mouseover', touching)
+videoEl.addEventListener('mousemove', touching)
 bottomPanel.addEventListener('mouseover', showBottomPanel)
-bottomPanel.addEventListener('mouseout', hideBottomPanel)
+container.addEventListener('mouseout', hideBottomPanel)
 videoEl.addEventListener('mouseout', hideBottomPanel)
 
 const keyEvents = (e) => {
