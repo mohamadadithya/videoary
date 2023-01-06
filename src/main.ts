@@ -12,7 +12,7 @@ type Subtitle = {
 }
 
 const video: Video = {
-    src: 'dumb',
+    src: 'waiting-on-a-friend',
     poster: null
 }
 
@@ -132,7 +132,7 @@ const videoEl = container.querySelector('video') as HTMLVideoElement
 const bottomPanel = container.querySelector('.videoary__bottom-panel') as HTMLAreaElement
 const toast = container.querySelector('.toast') as HTMLParagraphElement
 const posterEl = container.querySelector('.poster') as HTMLImageElement
-const settingsMenu = container.querySelector('.settings-menu')
+const settingsMenu = container.querySelector('.settings-menu') as HTMLAreaElement
 const captionsWrapper = container.querySelector('.captions-wrapper') as HTMLAreaElement
 
 const buttons = {
@@ -155,9 +155,9 @@ const videoCaptions: NodeListOf<HTMLTrackElement> = container.querySelectorAll('
 videoCaptions.forEach(caption => caption.track.mode = "hidden")
 
 // Transform videoCaptions node list to array
-const captionsArray = Array.from(videoEl.textTracks)
+const captionsArray: TextTrack[] = Array.from(videoEl.textTracks)
 // Default caption
-let selectedCaption: any = captionsArray.find(caption => caption.language == videoCaption)
+let selectedCaption = captionsArray.find(caption => caption.language == videoCaption) as TextTrack
 
 class Videoary {
     private idleTimer: ReturnType<typeof setTimeout> = 0
@@ -202,7 +202,7 @@ class Videoary {
         // Hide All Settings Buttons
         this.settingsButtons.forEach((button, index) => {
             button.addEventListener('click', () => {
-              settingsMenu?.classList.add('hide')
+              settingsMenu.classList.add('hide')
               const panel = this.settingsMenuPanels[index]
               panel.classList.add('show')
               const backButton = panel.querySelector('button:is(.action)') as HTMLButtonElement
@@ -223,7 +223,7 @@ class Videoary {
         const captionsButtons = this.settingsPanelButtons(0) as NodeListOf<HTMLButtonElement>
         this.settingsAction(captionsButtons, videoCaption, 'data-lang', (caption: any) => {
             videoCaption = caption
-            selectedCaption = captionsArray.find(caption => caption.language == videoCaption)
+            selectedCaption = captionsArray.find(caption => caption.language == videoCaption) as TextTrack
             this.runCaptions(selectedCaption)
             const indicatorEl = this.settingsButtons[0].querySelector('span:nth-child(2)') as HTMLElement
             indicatorEl.innerHTML = `${`${selectedCaption?.label} <i class="far fa-fw fa-chevron-right"></i>`}`
@@ -241,7 +241,7 @@ class Videoary {
     private hideSettingsPanelOutside(event: Event) {
         const targetElement = event.target as HTMLButtonElement
         if(targetElement.closest('#settings-button') || targetElement.closest('.settings-menu')) return
-        settingsMenu?.classList.remove('active')
+        settingsMenu.classList.remove('active')
         setTimeout(() => this.hideSettingsMenuPanel(), 300)
         if(!targetElement.closest('#videoary video')) this.hideBottomPanel()
     }
@@ -369,9 +369,9 @@ class Videoary {
     private openSettings(event: Event) {
         const icon = event.target as HTMLElement
         icon.style.transition = '.3s all ease'
-        settingsMenu?.classList.toggle('active')
+        settingsMenu.classList.toggle('active')
         setTimeout(this.hideSettingsMenuPanel, 300)
-        if(settingsMenu?.classList.contains('active')) {
+        if(settingsMenu.classList.contains('active')) {
             this.tooltips.forEach(tip => tip.setAttribute('aria-disabled', 'true'))
             icon.style.rotate = "30deg"
         } else {
@@ -382,7 +382,7 @@ class Videoary {
 
     private hideSettingsMenuPanel() {
         this.settingsMenuPanels.forEach(panel => panel.classList.remove('show'))
-        settingsMenu?.classList.remove('hide')
+        settingsMenu.classList.remove('hide')
     }
 
     private showToast(text: string) {
@@ -433,7 +433,7 @@ class Videoary {
     }
 
     private hideBottomPanel() {
-        if(videoEl.paused || settingsMenu?.classList.contains('active')) {
+        if(videoEl.paused || settingsMenu.classList.contains('active')) {
             this.showBottomPanel()
         } else {
             captionsWrapper.classList.add('get-down')

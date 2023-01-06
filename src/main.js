@@ -2,7 +2,7 @@ var _a;
 import './scss/main.scss';
 import { formatDuration } from './utils/helpers';
 const video = {
-    src: 'dumb',
+    src: 'waiting-on-a-friend',
     poster: null
 };
 const subtitles = [
@@ -169,7 +169,7 @@ class Videoary {
         // Hide All Settings Buttons
         this.settingsButtons.forEach((button, index) => {
             button.addEventListener('click', () => {
-                settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.add('hide');
+                settingsMenu.classList.add('hide');
                 const panel = this.settingsMenuPanels[index];
                 panel.classList.add('show');
                 const backButton = panel.querySelector('button:is(.action)');
@@ -204,7 +204,7 @@ class Videoary {
         const targetElement = event.target;
         if (targetElement.closest('#settings-button') || targetElement.closest('.settings-menu'))
             return;
-        settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.remove('active');
+        settingsMenu.classList.remove('active');
         setTimeout(() => this.hideSettingsMenuPanel(), 300);
         if (!targetElement.closest('#videoary video'))
             this.hideBottomPanel();
@@ -329,9 +329,9 @@ class Videoary {
     openSettings(event) {
         const icon = event.target;
         icon.style.transition = '.3s all ease';
-        settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.toggle('active');
+        settingsMenu.classList.toggle('active');
         setTimeout(this.hideSettingsMenuPanel, 300);
-        if (settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.contains('active')) {
+        if (settingsMenu.classList.contains('active')) {
             this.tooltips.forEach(tip => tip.setAttribute('aria-disabled', 'true'));
             icon.style.rotate = "30deg";
         }
@@ -342,7 +342,7 @@ class Videoary {
     }
     hideSettingsMenuPanel() {
         this.settingsMenuPanels.forEach(panel => panel.classList.remove('show'));
-        settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.remove('hide');
+        settingsMenu.classList.remove('hide');
     }
     showToast(text) {
         toast.classList.add("active");
@@ -392,7 +392,7 @@ class Videoary {
         }, this.idleDuration);
     }
     hideBottomPanel() {
-        if (videoEl.paused || (settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.contains('active'))) {
+        if (videoEl.paused || settingsMenu.classList.contains('active')) {
             this.showBottomPanel();
         }
         else {
