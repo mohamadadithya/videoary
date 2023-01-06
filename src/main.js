@@ -139,12 +139,12 @@ const captionsArray = Array.from(videoEl.textTracks);
 let selectedCaption = captionsArray.find(caption => caption.language == videoCaption);
 class Videoary {
     constructor() {
-        this.settingsMenuPanels = container.querySelectorAll('.settings-menu-panel');
-        this.tooltips = container.querySelectorAll('div[role="tooltip"]');
-        this.settingsButtons = container.querySelectorAll('.settings-menu > li button');
         this.idleTimer = 0;
         this.idleState = false;
         this.idleDuration = 3500;
+        this.settingsMenuPanels = container.querySelectorAll('.settings-menu-panel');
+        this.tooltips = container.querySelectorAll('div[role="tooltip"]');
+        this.settingsButtons = container.querySelectorAll('.settings-menu > li button');
     }
     init() {
         var _a, _b, _c, _d, _e, _f, _g;

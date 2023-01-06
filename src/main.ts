@@ -160,9 +160,9 @@ const captionsArray = Array.from(videoEl.textTracks)
 let selectedCaption: any = captionsArray.find(caption => caption.language == videoCaption)
 
 class Videoary {
-    private idleTimer: ReturnType<typeof setTimeout>
-    private idleState: boolean
-    private idleDuration: number
+    private idleTimer: ReturnType<typeof setTimeout> = 0
+    private idleState: boolean = false
+    private idleDuration: number = 3500
     private settingsMenuPanels: NodeListOf<HTMLAreaElement>
     private tooltips: NodeListOf<HTMLDivElement>
     private settingsButtons: NodeListOf<HTMLButtonElement>
@@ -171,9 +171,6 @@ class Videoary {
         this.settingsMenuPanels = container.querySelectorAll('.settings-menu-panel')
         this.tooltips = container.querySelectorAll('div[role="tooltip"]')
         this.settingsButtons = container.querySelectorAll('.settings-menu > li button')
-        this.idleTimer = 0
-        this.idleState = false
-        this.idleDuration = 3500
     }
 
     init() {
