@@ -206,7 +206,7 @@ class Videoary {
             return;
         settingsMenu === null || settingsMenu === void 0 ? void 0 : settingsMenu.classList.remove('active');
         setTimeout(() => this.hideSettingsMenuPanel(), 300);
-        if (!targetElement.closest('#videoary .video'))
+        if (!targetElement.closest('#videoary video'))
             this.hideBottomPanel();
     }
     fullscreenChange() {
