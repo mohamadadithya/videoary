@@ -1,4 +1,4 @@
-import './scss/main.scss';
+import '../scss/main.scss';
 import { formatDuration, render } from './utils/helpers';
 export class Videoary {
     constructor(options) {
