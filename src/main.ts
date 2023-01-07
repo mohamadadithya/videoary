@@ -1,199 +1,108 @@
 import './scss/main.scss'
-import { formatDuration } from './utils/helpers'
+import { formatDuration, render } from './utils/helpers'
 import { Video, Subtitle } from './utils/types'
 
-const video: Video = {
-    src: 'waiting-on-a-friend',
-    poster: null
-}
-
-const subtitles: Array<Subtitle> = [
-    {
-        short: "en",
-        long: 'English'
-    }
-]
-
-const playbackSpeeds: Array<Number> = [0.25, 0.5, 0.7, 1, 1.25, 1.5, 1.75, 2]
-
-let isPlayed: Boolean = false
-let currentVolume: number
-let playbackSpeed: number
-let videoCaption: String = subtitles[0].short
-
-const appRoot = document.querySelector('#app') as HTMLAreaElement
-
-appRoot.innerHTML = `
-<div class="container videoary" id="videoary">
-  <div class="toast"></div>
-  <img class="poster" ${video.poster ? `src="/posters/${video.poster}"` : ''} />
-  <video preload>
-    <source src="/videos/${video.src}.mp4" type="video/mp4" />
-    ${subtitles.map((caption) => {
-      return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="/captions/${video.src}/${caption.long.toLowerCase()}.vtt" default />`
-    }).join('')}
-  </video>
-  <div class="captions-wrapper"></div>
-  <div class="videoary__bottom-panel">
-      <div class="duration-wrapper">
-        <input type="range" name="duration" id="duration" value="0" min="0" step=".001">
-      </div>
-      <div class="actions-wrapper">
-          <ul class="videoary__bottom-panel__actions">
-              <li>
-                <button id="play-button"><i class="fas fa-fw fa-play"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Play (p)</div>
-              </li>
-              <li>
-                <button><i class="fas fa-fw fa-volume" id="volume-button"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Mute (m)</div>
-                  <input type="range" name="volume" id="volume" min="0" max="1" step=".001" value="0">
-              </li>
-              <li>
-                  <p id="duration-indicator"></p>
-              </li>
-          </ul>
-          <ul class="videoary__bottom-panel__actions">
-            <li>
-                <button id="closed-captions-button"><i class="far fa-fw fa-closed-captioning"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Subtitles (c)</div>
-            </li>
-            <li>
-                <button id="pic-in-pic-button"><i class="far fa-fw fa-tv-alt"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Picture in Picture (i)</div>
-            </li>
-            <li>
-                <button id="fullscreen-button"><i class="far fa-fw fa-expand"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Fullscreen (f)</div>
-            </li>
-            <li>
-              <button id="settings-button"><i class="fas fa-fw fa-gear"></i></button>
-            </li>
-            <li>
-                <button id="theater-button"><i class="far fa-fw fa-rectangle-wide"></i></button>
-                <div role="tooltip" aria-disabled="false" class="tooltip">Theater Mode (t)</div>
-            </li>
-          </ul>
-      </div>
-    <ul class="settings-menu">
-      <li>
-      <button type="button" class="flex justify-between items-center w-full">
-        <span>
-          <i class="far fa-fw fa-closed-captioning"></i>
-          Subtitles/CC
-        </span>
-        <span>
-          ${subtitles[0].long}
-          <i class="far fa-fw fa-chevron-right"></i>
-        </span>
-      </button>
-    </li>
-    <li>
-      <button type="button" id="playback-speed" class="flex justify-between items-center w-full text-left">
-        <span>
-          <i class="far fa-fw fa-gauge"></i> Playback Speed
-        </span>
-        <span class="indicator">
-          Normal <i class="far fa-fw fa-chevron-right"></i>
-        </span>
-      </button>
-    </li>
-    <ul class="settings-menu-panel text-sm">
-      <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Subtitles/CC</li>
-      ${subtitles.map((caption) => {
-        return `<li><button data-lang="${caption.short}" type="button" class="w-full text-left">${caption.long} <i class="fas fa-fw fa-check ${caption.short == videoCaption ? "" : "hidden"}"></i></button></li>`
-      }).join('')}
-    </ul>
-    <ul class="settings-menu-panel text-sm">
-      <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Playback Speed</li>
-      ${playbackSpeeds.map((speed) => {
-        return `<li><button data-speed="${speed}" type="button" class="w-full text-left">${speed == 1 ? "Normal" : speed} <i class="fas fa-fw fa-check ${speed == playbackSpeed ? "" : "hidden"}"></i></button></li>`
-      }).join('')}
-    </ul>
-  </ul>
-  </div>
-</div>
-`
-
-const container = document.getElementById('videoary') as HTMLAreaElement
-const durationSlider = container.querySelector('input:is(#duration)') as HTMLInputElement
-const volumeSlider = container.querySelector('input:is(#volume)') as HTMLInputElement
-const durationIndicator = container.querySelector('#duration-indicator') as HTMLElement
-const videoEl = container.querySelector('video') as HTMLVideoElement
-const bottomPanel = container.querySelector('.videoary__bottom-panel') as HTMLAreaElement
-const toast = container.querySelector('.toast') as HTMLParagraphElement
-const posterEl = container.querySelector('.poster') as HTMLImageElement
-const settingsMenu = container.querySelector('.settings-menu') as HTMLAreaElement
-const captionsWrapper = container.querySelector('.captions-wrapper') as HTMLAreaElement
-
-const buttons = {
-    play: document.querySelector('#play-button'),
-    volume: document.getElementById('volume-button'),
-    fullscreen: document.getElementById('fullscreen-button'),
-    captions: document.getElementById('closed-captions-button'),
-    picInPic: document.getElementById('pic-in-pic-button'),
-    theater: document.getElementById('theater-button'),
-    settings: document.getElementById('settings-button')
-}
-
-const playIcon = buttons.play?.querySelector('i') as HTMLElement
-
-container.addEventListener('contextmenu', (e) => e.preventDefault())
-
-// Default States //
-bottomPanel.classList.add('showed-up')
-const videoCaptions: NodeListOf<HTMLTrackElement> = container.querySelectorAll('track')
-videoCaptions.forEach(caption => caption.track.mode = "hidden")
-
-// Transform videoCaptions node list to array
-const captionsArray: TextTrack[] = Array.from(videoEl.textTracks)
-// Default caption
-let selectedCaption = captionsArray.find(caption => caption.language == videoCaption) as TextTrack
-
-class Videoary {
+export class Videoary {
+    public containerArea: HTMLAreaElement
+    public subtitles?: Subtitle[]
+    public video?: Video
+    private isPlayed: Boolean = false
+    private currentVolume: number = 1
+    private playbackSpeed: number = 1
+    private container: HTMLAreaElement
     private idleTimer: ReturnType<typeof setTimeout> = 0
     private idleState: boolean = false
     private idleDuration: number = 3500
+    private playbackSpeeds: Number[] = [0.25, 0.5, 0.7, 1, 1.25, 1.5, 1.75, 2]
     private settingsMenuPanels: NodeListOf<HTMLAreaElement>
     private tooltips: NodeListOf<HTMLDivElement>
     private settingsButtons: NodeListOf<HTMLButtonElement>
+    private durationSlider
+    private volumeSlider
+    private durationIndicator
+    private videoEl
+    private bottomPanel
+    private toast
+    private posterEl
+    private settingsMenu
+    private captionsWrapper
+    private captionsArray: TextTrack[]
+    private selectedCaption: TextTrack
+    private buttons
+    private playIcon: HTMLElement
+    private videoCaptions: NodeListOf<HTMLTrackElement>
+    private videoCaption: String | null
+    options
 
-    constructor() {
-        this.settingsMenuPanels = container.querySelectorAll('.settings-menu-panel')
-        this.tooltips = container.querySelectorAll('div[role="tooltip"]')
-        this.settingsButtons = container.querySelectorAll('.settings-menu > li button')
+    constructor(options: Partial<Videoary>) {
+        this.options = Object.assign(this, options)
+        this.subtitles = options.subtitles
+        this.video = options.video
+        this.videoCaption = this.subtitles ? this.subtitles[0].short : null
+        this.containerArea = options.containerArea as HTMLAreaElement
+        render(this.containerArea, this.video, this.subtitles, this.playbackSpeed, this.playbackSpeeds, this.videoCaption)
+        this.container = this.containerArea.querySelector('.videoary') as HTMLAreaElement
+        this.settingsMenuPanels = this.container.querySelectorAll('.settings-menu-panel')
+        this.tooltips = this.container.querySelectorAll('div[role="tooltip"]')
+        this.settingsButtons = this.container.querySelectorAll('.settings-menu > li button')
+        this.durationSlider = this.container.querySelector('input:is(#duration)') as HTMLInputElement
+        this.volumeSlider = this.container.querySelector('input:is(#volume)') as HTMLInputElement
+        this.durationIndicator = this.container.querySelector('#duration-indicator') as HTMLElement
+        this.videoEl = this.container.querySelector('video') as HTMLVideoElement
+        this.bottomPanel = this.container.querySelector('.videoary__bottom-panel') as HTMLAreaElement
+        this.toast = this.container.querySelector('.toast') as HTMLParagraphElement
+        this.posterEl = this.container.querySelector('.poster') as HTMLImageElement
+        this.settingsMenu = this.container.querySelector('.settings-menu') as HTMLAreaElement
+        this.captionsWrapper = this.container.querySelector('.captions-wrapper') as HTMLAreaElement
+        this.captionsArray = Array.from(this.videoEl.textTracks)
+        this.selectedCaption = this.captionsArray.find(caption => caption.language == this.videoCaption) as TextTrack
+        this.buttons = {
+            play: this.container.querySelector('#play-button'),
+            volume: this.container.querySelector('#volume-button'),
+            fullscreen: this.container.querySelector('#fullscreen-button'),
+            captions: this.container.querySelector('#closed-captions-button'),
+            picInPic: this.container.querySelector('#pic-in-pic-button'),
+            theater: this.container.querySelector('#theater-button'),
+            settings: this.container.querySelector('#settings-button')
+        }
+        this.playIcon = this.buttons.play?.querySelector('i') as HTMLElement
+        this.videoCaptions = this.container.querySelectorAll('track')
     }
 
     init() {
-        videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this))
-        videoEl.addEventListener('click', this.playVideo.bind(this))
-        videoEl.addEventListener('ended', () => playIcon.classList.replace('fa-pause', 'fa-play'))
-        videoEl.addEventListener('timeupdate', this.runDuration.bind(this))
+        this.videoCaptions.forEach(caption => caption.track.mode = "hidden")
+        this.container.addEventListener('contextmenu', (event: MouseEvent) => event.preventDefault())
+        this.bottomPanel.classList.add('showed-up')
 
-        container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this))
+        this.videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this))
+        this.videoEl.addEventListener('click', this.playVideo.bind(this))
+        this.videoEl.addEventListener('ended', () => this.playIcon.classList.replace('fa-pause', 'fa-play'))
+        this.videoEl.addEventListener('timeupdate', this.runDuration.bind(this))
 
-        container.addEventListener('mousemove', this.idleWatch.bind(this))
-        videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this))
-        bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this))
-        container.addEventListener('mouseout', this.hideBottomPanel.bind(this))
+        this.container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this))
+
+        this.container.addEventListener('mousemove', this.idleWatch.bind(this))
+        this.videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this))
+        this.bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this))
+        this.container.addEventListener('mouseout', this.hideBottomPanel.bind(this))
 
         document.addEventListener('keydown', this.keyEvents.bind(this))
         document.addEventListener('click', this.hideSettingsPanelOutside.bind(this))
 
-        durationSlider.addEventListener('input', this.seekingVideo.bind(this))
-        durationSlider.addEventListener('change', this.seekingVideoPaused.bind(this))
-        volumeSlider.addEventListener('click', (event: Event) => event.stopPropagation())
-        volumeSlider.addEventListener('input', this.seekingVolume.bind(this))
+        this.durationSlider.addEventListener('input', this.seekingVideo.bind(this))
+        this.durationSlider.addEventListener('change', this.seekingVideoPaused.bind(this))
+        this.volumeSlider.addEventListener('click', (event: Event) => event.stopPropagation())
+        this.volumeSlider.addEventListener('input', this.seekingVolume.bind(this))
         
-        window.addEventListener('click', () => volumeSlider.classList.remove('active'))
+        window.addEventListener('click', () => this.volumeSlider.classList.remove('active'))
 
-        this.runCaptions(selectedCaption)
-        videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this))
+        this.runCaptions(this.selectedCaption)
+        this.videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this))
 
         // Hide All Settings Buttons
         this.settingsButtons.forEach((button, index) => {
             button.addEventListener('click', () => {
-              settingsMenu.classList.add('hide')
+              this.settingsMenu.classList.add('hide')
               const panel = this.settingsMenuPanels[index]
               panel.classList.add('show')
               const backButton = panel.querySelector('button:is(.action)') as HTMLButtonElement
@@ -204,41 +113,41 @@ class Videoary {
         // For Playback Speed Changer
         const playbackSpeedButtons = this.settingsPanelButtons(1) as NodeListOf<HTMLButtonElement>
 
-        this.settingsAction(playbackSpeedButtons, playbackSpeed, 'data-speed', (speed: number) => {
-            videoEl.playbackRate = speed
+        this.settingsAction(playbackSpeedButtons, this.playbackSpeed, 'data-speed', (speed: number) => {
+            this.videoEl.playbackRate = speed
             const indicatorEl = this.settingsButtons[1].querySelector('span:nth-child(2)') as HTMLElement
             indicatorEl.innerHTML = `${`${speed == 1 ? 'Normal' : speed} <i class="far fa-fw fa-chevron-right"></i>`}`
         })
 
         // For Subtitle Changer
         const captionsButtons = this.settingsPanelButtons(0) as NodeListOf<HTMLButtonElement>
-        this.settingsAction(captionsButtons, videoCaption, 'data-lang', (caption: any) => {
-            videoCaption = caption
-            selectedCaption = captionsArray.find(caption => caption.language == videoCaption) as TextTrack
-            this.runCaptions(selectedCaption)
+        this.settingsAction(captionsButtons, this.videoCaption, 'data-lang', (caption: any) => {
+            this.videoCaption = caption
+            this.selectedCaption = this.captionsArray.find(caption => caption.language == this.videoCaption) as TextTrack
+            this.runCaptions(this.selectedCaption)
             const indicatorEl = this.settingsButtons[0].querySelector('span:nth-child(2)') as HTMLElement
-            indicatorEl.innerHTML = `${`${selectedCaption?.label} <i class="far fa-fw fa-chevron-right"></i>`}`
+            indicatorEl.innerHTML = `${`${this.selectedCaption?.label} <i class="far fa-fw fa-chevron-right"></i>`}`
         })
 
-        buttons.play?.addEventListener('click', this.playVideo.bind(this))
-        buttons.fullscreen?.addEventListener('click', this.openFullScreen.bind(this))
-        buttons.picInPic?.addEventListener('click', this.openPIP.bind(this))
-        buttons.captions?.addEventListener('click', this.showCaptions.bind(this))
-        buttons.volume?.addEventListener('click', this.muteVolume.bind(this))
-        buttons.theater?.addEventListener('click', this.theaterMode.bind(this))
-        buttons.settings?.addEventListener('click', this.openSettings.bind(this))
+        this.buttons.play?.addEventListener('click', this.playVideo.bind(this))
+        this.buttons.fullscreen?.addEventListener('click', this.openFullScreen.bind(this))
+        this.buttons.picInPic?.addEventListener('click', this.openPIP.bind(this))
+        this.buttons.captions?.addEventListener('click', this.showCaptions.bind(this))
+        this.buttons.volume?.addEventListener('click', this.muteVolume.bind(this))
+        this.buttons.theater?.addEventListener('click', this.theaterMode.bind(this))
+        this.buttons.settings?.addEventListener('click', this.openSettings.bind(this))
     }
 
     private hideSettingsPanelOutside(event: Event) {
         const targetElement = event.target as HTMLButtonElement
         if(targetElement.closest('#settings-button') || targetElement.closest('.settings-menu')) return
-        settingsMenu.classList.remove('active')
+        this.settingsMenu.classList.remove('active')
         setTimeout(() => this.hideSettingsMenuPanel(), 300)
         if(!targetElement.closest('#videoary video')) this.hideBottomPanel()
     }
 
     private fullscreenChange() {
-        const icon = buttons.fullscreen?.querySelector('i') as HTMLElement
+        const icon = this.buttons.fullscreen?.querySelector('i') as HTMLElement
         if (document.fullscreenElement) {
             icon.classList.replace('fa-expand', 'fa-compress')
         } else {
@@ -248,23 +157,23 @@ class Videoary {
 
     private seekingVideo(event: Event) {
         const targetElement = event.target as HTMLInputElement
-        videoEl.pause()
-        videoEl.currentTime = Number(targetElement.value)
-        container.classList.add('seeking')
-        videoEl.volume = 0
+        this.videoEl.pause()
+        this.videoEl.currentTime = Number(targetElement.value)
+        this.container.classList.add('seeking')
+        this.videoEl.volume = 0
     }
 
     private seekingVideoPaused() {
-        isPlayed ? videoEl.play() : videoEl.pause()
-        container.classList.remove('seeking')
-        videoEl.volume = 1
+        this.isPlayed ? this.videoEl.play() : this.videoEl.pause()
+        this.container.classList.remove('seeking')
+        this.videoEl.volume = 1
     }
 
     private seekingVolume(event: Event) {
-        volumeSlider.classList.add('active')
+        this.volumeSlider.classList.add('active')
         const targetElement = event.target as HTMLInputElement
-        videoEl.volume = Number(targetElement.value)
-        videoEl.volume > 0 ? videoEl.muted = false : videoEl.muted = true
+        this.videoEl.volume = Number(targetElement.value)
+        this.videoEl.volume > 0 ? this.videoEl.muted = false : this.videoEl.muted = true
         this.changeMuteIcon()
     }
 
@@ -272,12 +181,12 @@ class Videoary {
         this.showBottomPanel()
         setTimeout(() => {
             this.hideBottomPanel()
-            container.style.cursor = "none"
+            this.container.style.cursor = "none"
         }, this.idleDuration)
           if (event.key == "ArrowRight") {
-            videoEl.currentTime += 5
+            this.videoEl.currentTime += 5
         } else if (event.key == "ArrowLeft") {
-            videoEl.currentTime -= 5
+            this.videoEl.currentTime -= 5
         } else if (event.key == " " || event.key == "p") {
             this.playVideo()
         } else if (event.key == "m") {
@@ -296,15 +205,15 @@ class Videoary {
 
     private loadedVideo(event: Event) {
         const indicatorEl = event.target as HTMLVideoElement
-        durationIndicator.textContent = `0:00 / ${formatDuration(indicatorEl.duration)}`
-        durationSlider.max = indicatorEl.duration.toString()
-        volumeSlider.value = indicatorEl.volume.toString()
+        this.durationIndicator.textContent = `0:00 / ${formatDuration(indicatorEl.duration)}`
+        this.durationSlider.max = indicatorEl.duration.toString()
+        this.volumeSlider.value = indicatorEl.volume.toString()
     }
 
     private runDuration() {
-        const time = videoEl.currentTime
-        durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(videoEl.duration)}`
-        durationSlider.value = time.toString()
+        const time = this.videoEl.currentTime
+        this.durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(this.videoEl.duration)}`
+        this.durationSlider.value = time.toString()
     }
 
     private settingsPanelButtons(panelIndex: number) {
@@ -331,19 +240,19 @@ class Videoary {
     }
 
     private runCaptions(caption: TextTrack) {
-        videoCaptions.forEach(caption => caption.track.mode = "disabled")
+        this.videoCaptions.forEach(caption => caption.track.mode = "disabled")
         caption.mode = "hidden"
         
-        caption.addEventListener("cuechange", function(event) {
+        caption.addEventListener("cuechange", (event) => {
             const cues = (event.target as TextTrack).activeCues
     
             if(cues && cues.length > 0) {
                 const cue = cues[0] as VTTCue
-                captionsWrapper.textContent = cue.text
+                this.captionsWrapper.textContent = cue.text
             } else {
-                captionsWrapper.textContent = ""
+                this.captionsWrapper.textContent = ""
             }
-            videoEl.addEventListener('ended', () => captionsWrapper.textContent = "")
+            this.videoEl.addEventListener('ended', () => this.captionsWrapper.textContent = "")
         })
     }
 
@@ -353,16 +262,16 @@ class Videoary {
                     .then(() => console.log('Document exited from fullscreen mode'))
                     .catch((error) => console.error(error))
         } else {
-            container.requestFullscreen()
+            this.container.requestFullscreen()
         }
     }
 
     private openSettings(event: Event) {
         const icon = event.target as HTMLElement
         icon.style.transition = '.3s all ease'
-        settingsMenu.classList.toggle('active')
+        this.settingsMenu.classList.toggle('active')
         setTimeout(this.hideSettingsMenuPanel, 300)
-        if(settingsMenu.classList.contains('active')) {
+        if(this.settingsMenu.classList.contains('active')) {
             this.tooltips.forEach(tip => tip.setAttribute('aria-disabled', 'true'))
             icon.style.rotate = "30deg"
         } else {
@@ -373,19 +282,19 @@ class Videoary {
 
     private hideSettingsMenuPanel() {
         this.settingsMenuPanels.forEach(panel => panel.classList.remove('show'))
-        settingsMenu.classList.remove('hide')
+        this.settingsMenu.classList.remove('hide')
     }
 
     private showToast(text: string) {
-        toast.classList.add("active")
-        setTimeout(() => toast.classList.remove('active'), 2000)
-        toast.textContent = text
+        this.toast.classList.add("active")
+        setTimeout(() => this.toast.classList.remove('active'), 2000)
+        this.toast.textContent = text
     }
 
     private showCaptions() {
-        captionsWrapper.classList.toggle('active')
-        const icon = buttons.captions?.querySelector('i')
-        if(captionsWrapper.classList.contains('active')) {
+        this.captionsWrapper.classList.toggle('active')
+        const icon = this.buttons.captions?.querySelector('i')
+        if(this.captionsWrapper.classList.contains('active')) {
             this.showToast('Closed Captions is On')
             icon?.classList.replace('far', 'fas')
         } else {
@@ -395,16 +304,16 @@ class Videoary {
     }
 
     private playVideo() {
-        posterEl.classList.add('hide')
-        if(videoEl.paused) {
-            playIcon.classList.replace('fa-play', 'fa-pause')
-            videoEl.play()
-            isPlayed = true
+        this.posterEl.classList.add('hide')
+        if(this.videoEl.paused) {
+            this.playIcon.classList.replace('fa-play', 'fa-pause')
+            this.videoEl.play()
+            this.isPlayed = true
         } else {
-            playIcon.classList.replace('fa-pause', 'fa-play')
-            videoEl.pause()
+            this.playIcon.classList.replace('fa-pause', 'fa-play')
+            this.videoEl.pause()
             this.showBottomPanel()
-            isPlayed = false
+            this.isPlayed = false
         }
     }
 
@@ -418,37 +327,37 @@ class Videoary {
                 console.log();
                 this.hideBottomPanel()
                 this.idleState = true
-                container.style.cursor = "none"
+                this.container.style.cursor = "none"
             }
         }, this.idleDuration)
     }
 
     private hideBottomPanel() {
-        if(videoEl.paused || settingsMenu.classList.contains('active')) {
+        if(this.videoEl.paused || this.settingsMenu.classList.contains('active')) {
             this.showBottomPanel()
         } else {
-            captionsWrapper.classList.add('get-down')
-            bottomPanel.classList.remove('showed-up')
+            this.captionsWrapper.classList.add('get-down')
+            this.bottomPanel.classList.remove('showed-up')
         }
     }
 
     private showBottomPanel() {
-        container.style.cursor = "default"
-        bottomPanel.classList.add('showed-up')
-        captionsWrapper.classList.remove('get-down')
+        this.container.style.cursor = "default"
+        this.bottomPanel.classList.add('showed-up')
+        this.captionsWrapper.classList.remove('get-down')
     }
 
     private openPIP() {
         if(document.pictureInPictureElement) {
             document.exitPictureInPicture()
         } else if(document.pictureInPictureEnabled) {
-            videoEl.requestPictureInPicture()
+            this.videoEl.requestPictureInPicture()
         }
     }
 
     private changeMuteIcon() {
-        const icon = buttons.volume as HTMLElement
-        const { volume } = videoEl
+        const icon = this.buttons.volume as HTMLElement
+        const { volume } = this.videoEl
         if (volume == 0) {
             if (icon.classList.contains('fa-volume-down')) {
               icon.classList.replace('fa-volume-down', 'fa-volume-mute')
@@ -471,47 +380,44 @@ class Videoary {
     }
 
     private muteVolume() {
-        const { muted } = videoEl
+        const { muted } = this.videoEl
         if(muted) {
-            videoEl.muted = false
-            videoEl.volume = currentVolume
-            volumeSlider.value = currentVolume.toString()
+            this.videoEl.muted = false
+            this.videoEl.volume = this.currentVolume
+            this.volumeSlider.value = this.currentVolume.toString()
         } else if(!muted) {
-            currentVolume = Number(volumeSlider.value)
-            videoEl.muted = true
-            videoEl.volume = 0
-            volumeSlider.value = "0"
+            this.currentVolume = Number(this.volumeSlider.value)
+            this.videoEl.muted = true
+            this.videoEl.volume = 0
+            this.volumeSlider.value = "0"
         }
     }
 
     private theaterMode() {
-        container.classList.toggle('theater-mode')
-        const icon = buttons.theater?.querySelector('i') as HTMLElement
-        const tooltip = buttons.theater?.nextElementSibling as HTMLElement
-        if (container.classList.contains('theater-mode')) {
+        this.container.classList.toggle('theater-mode')
+        const icon = this.buttons.theater?.querySelector('i') as HTMLElement
+        const tooltip = this.buttons.theater?.nextElementSibling as HTMLElement
+        if (this.container.classList.contains('theater-mode')) {
             this.showToast('Theater Mode is On')
-            container.style.height = `${videoEl.videoHeight}px`
+            this.container.style.height = `${this.videoEl.videoHeight}px`
             icon.style.fontSize = '.9rem'
             tooltip.textContent = "Default View (t)"
         } else {
             this.showToast('Theater Mode is Off')
-            container.style.height = `100%`
+            this.container.style.height = `100%`
             icon.style.fontSize = '1.3rem'
             tooltip.textContent = "Theater Mode (t)"
         }
     }
 
     private leavePIP() {
-        const wasPlaying: boolean = !videoEl.paused
+        const wasPlaying: boolean = !this.videoEl.paused
         setTimeout(() => {
-            if (!videoEl.paused) {
-                playIcon.classList.replace('fa-play', 'fa-play')
+            if (!this.videoEl.paused) {
+                this.playIcon.classList.replace('fa-play', 'fa-play')
             } else if (wasPlaying) {
-                playIcon.classList.replace('fa-pause', 'fa-play')
+                this.playIcon.classList.replace('fa-pause', 'fa-play')
             }
         }, 0)
     }
 }
-
-const videoary = new Videoary()
-videoary.init()

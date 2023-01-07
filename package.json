@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "dev:compile": "tsc ./src/main.ts --target es6 --watch",
+    "dev:compile": "tsc ./src/script.ts --target es6 --watch",
     "build": "vite build",
     "preview": "vite preview"
   },
