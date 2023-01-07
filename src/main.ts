@@ -6,6 +6,7 @@ export class Videoary {
     public containerArea: HTMLAreaElement
     public subtitles?: Subtitle[]
     public video?: Video
+    public options
     private isPlayed: Boolean = false
     private currentVolume: number = 1
     private playbackSpeed: number = 1
@@ -32,7 +33,6 @@ export class Videoary {
     private playIcon: HTMLElement
     private videoCaptions: NodeListOf<HTMLTrackElement>
     private videoCaption: String | null
-    options
 
     constructor(options: Partial<Videoary>) {
         this.options = Object.assign(this, options)
