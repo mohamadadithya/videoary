@@ -1,15 +1,6 @@
 import './scss/main.scss'
 import { formatDuration } from './utils/helpers'
-
-interface Video {
-    src: String,
-    poster: unknown
-}
-
-type Subtitle = {
-    short: String,
-    long: String
-}
+import { Video, Subtitle } from './utils/types'
 
 const video: Video = {
     src: 'waiting-on-a-friend',
