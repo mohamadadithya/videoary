@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro-v6@44659d9/css/all.min.css');
+
 :root {
-  accent-color: orangered;
+  --primaryColor: hsl(353, 86%, 54%);
   --font-poppins: "Poppins", sans-serif;
 }
 
@@ -10,12 +13,6 @@
   padding: 0;
   box-sizing: border-box;
   font-family: inherit;
-}
-
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  height: 100vh;
 }
 
 .videoary {
@@ -169,7 +166,7 @@ body {
   }
 
   input[type="range"] {
-    color: #ef233c;
+    color: var(--primaryColor);
     --thumb-height: 1em;
     --track-height: 0.13em;
     --track-color: hsla(0, 0%, 80%, 0.5);
@@ -200,9 +197,51 @@ body {
     &::-webkit-slider-runnable-track,
     &::-webkit-slider-thumb {
       -webkit-appearance: none;
-      transition: all ease 100ms;
       height: var(--thumb-height);
       position: relative;
+    }
+
+    &:is(#duration):hover {
+      --clip-edges: 0.125em;
+      &::-webkit-slider-thumb {
+        --box-fill: calc(-100vmax - var(--thumb-width, var(--thumb-height))) 0 0 100vmax currentColor;
+        --clip-further: calc(100% + 1px);
+        width: var(--thumb-width, var(--thumb-height));
+        clip-path: polygon(100% -1px,
+        var(--clip-edges) -1px,
+        0 var(--clip-top),
+        -100vmax var(--clip-top),
+        -100vmax var(--clip-bottom),
+        0 var(--clip-bottom),
+        var(--clip-edges) 100%,
+        var(--clip-further) var(--clip-further));
+      }
+
+      &::-moz-range-thumb {
+        width: var(--thumb-width, var(--thumb-height));
+      }
+    }
+
+    &:is(#duration) {
+      --clip-edges: 0;
+      &::-webkit-slider-thumb {
+        --box-fill: calc(-100vmax - var(--thumb-width, var(--thumb-height))) 0 0 105vmax currentColor;
+        --clip-further: 0;
+
+        width: 0;
+        clip-path: polygon(0% 0px,
+        var(--clip-edges) 0px,
+        0 var(--clip-top),
+        -100vmax var(--clip-top),
+        0 var(--clip-bottom),
+        0 var(--clip-bottom),
+        var(--clip-edges) 0%,
+        var(--clip-further) var(--clip-further));
+      }
+
+      &::-moz-range-thumb {
+        width: 0;
+      }
     }
 
     &::-webkit-slider-thumb {
@@ -251,7 +290,6 @@ body {
     &::-moz-range-track,
     &::-moz-range-thumb {
       appearance: none;
-      transition: all ease 100ms;
       height: var(--thumb-height);
     }
 
@@ -266,7 +304,7 @@ body {
       border: 0;
       width: var(--thumb-width, var(--thumb-height));
       border-radius: var(--thumb-width, var(--thumb-height));
-      cursor: grab;
+      cursor: pointer;
     }
 
     &:active::-moz-range-thumb {

@@ -4,7 +4,7 @@ const container = document.querySelector('#app') as HTMLAreaElement
 const videoary = new Videoary({
     containerArea: container,
     video: {
-        src: "waiting-on-a-friend",
+        src: "ramble-on",
         poster: null
     },
     subtitles: [
