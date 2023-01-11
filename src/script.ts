@@ -4,13 +4,14 @@ const container = document.querySelector('#app') as HTMLAreaElement
 const videoary = new Videoary({
     containerArea: container,
     video: {
-        src: "ramble-on",
+        source: "https://dl.dropboxusercontent.com/s/8v7q999tockekbd/aneurysm.mp4?dl=0",
         poster: null
     },
     subtitles: [
         {
             short: "en",
-            long: "English"
+            long: "English",
+            source: "https://dl.dropboxusercontent.com/s/bpi0shihyknapu4/english.vtt?dl=0"
         }
     ]
 })

@@ -1,3 +1,12 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import '../scss/main.scss';
 import { formatDuration, render } from './utils/helpers';
 export class Videoary {
@@ -42,64 +51,95 @@ export class Videoary {
         };
         this._playIcon = (_a = this._buttons.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
         this._videoCaptions = this._container.querySelectorAll('track');
+        this._ambientCanvas = this._container.querySelector('canvas');
+        this._ctx = this._ambientCanvas.getContext('2d');
+        this._loader = this._container.querySelector('.loader');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g;
-        this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
-        this._bottomPanel.classList.add('showed-up');
-        this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this));
-        this._videoEl.addEventListener('click', this.playVideo.bind(this));
-        this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'));
-        this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this));
-        this._container.addEventListener('contextmenu', (event) => event.preventDefault());
-        this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this));
-        this._container.addEventListener('mousemove', this.idlingWatch.bind(this));
-        this._container.addEventListener('mouseout', this.hideBottomPanel.bind(this));
-        this._videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this));
-        this._bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this));
-        document.addEventListener('keydown', this.keyEvents.bind(this));
-        document.addEventListener('click', this.hideSettingsPanelOutside.bind(this));
-        this._durationSlider.addEventListener('input', this.seekingVideo.bind(this));
-        this._durationSlider.addEventListener('change', this.seekingVideoPaused.bind(this));
-        this._volumeSlider.addEventListener('click', (event) => event.stopPropagation());
-        this._volumeSlider.addEventListener('input', this.seekingVolume.bind(this));
-        window.addEventListener('click', () => this._volumeSlider.classList.remove('active'));
-        this.runCaptions(this._selectedCaption);
-        this._videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this));
-        // Hide All Settings Buttons
-        this._settingsButtons.forEach((button, index) => {
-            button.addEventListener('click', () => {
-                this._settingsMenu.classList.add('hide');
-                const panel = this._settingsMenuPanels[index];
-                panel.classList.add('show');
-                const backButton = panel.querySelector('button:is(.action)');
-                backButton.addEventListener('click', this.hideSettingsMenuPanel.bind(this));
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.convertToBlob((_a = this.video) === null || _a === void 0 ? void 0 : _a.source);
+            this._loader.classList.add('hide');
+            this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
+            this._bottomPanel.classList.add('showed-up');
+            this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this));
+            this._videoEl.addEventListener('click', this.playVideo.bind(this));
+            this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'));
+            this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this));
+            this._videoEl.addEventListener('play', this.runAmbient.bind(this));
+            this._container.addEventListener('contextmenu', (event) => event.preventDefault());
+            this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this));
+            this._container.addEventListener('mousemove', this.idlingWatch.bind(this));
+            this._container.addEventListener('mouseout', this.hideBottomPanel.bind(this));
+            this._videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this));
+            this._bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this));
+            document.addEventListener('keydown', this.keyEvents.bind(this));
+            document.addEventListener('click', this.hideSettingsPanelOutside.bind(this));
+            this._durationSlider.addEventListener('input', this.seekingVideo.bind(this));
+            this._durationSlider.addEventListener('change', this.seekingVideoPaused.bind(this));
+            this._volumeSlider.addEventListener('click', (event) => event.stopPropagation());
+            this._volumeSlider.addEventListener('input', this.seekingVolume.bind(this));
+            window.addEventListener('click', () => this._volumeSlider.classList.remove('active'));
+            window.addEventListener('resize', () => {
+                this.setCanvasDimension();
+                if (this._videoEl.paused)
+                    this.paintStaticVideo();
             });
-        });
-        // For Playback Speed Changer
-        const playbackSpeedButtons = this.settingsPanelButtons(1);
-        this.settingsAction(playbackSpeedButtons, this._playbackSpeed, 'data-speed', (speed) => {
-            this._videoEl.playbackRate = speed;
-            const indicatorEl = this._settingsButtons[1].querySelector('span:nth-child(2)');
-            indicatorEl.innerHTML = `${`${speed == 1 ? 'Normal' : speed} <i class="far fa-fw fa-chevron-right"></i>`}`;
-        });
-        // For Subtitle Changer
-        const captionsButtons = this.settingsPanelButtons(0);
-        this.settingsAction(captionsButtons, this._videoCaption, 'data-lang', (caption) => {
-            var _a;
-            this._videoCaption = caption;
-            this._selectedCaption = this._captionsArray.find(caption => caption.language == this._videoCaption);
+            this._videoEl.addEventListener('seeked', this.paintStaticVideo.bind(this));
             this.runCaptions(this._selectedCaption);
-            const indicatorEl = this._settingsButtons[0].querySelector('span:nth-child(2)');
-            indicatorEl.innerHTML = `${`${(_a = this._selectedCaption) === null || _a === void 0 ? void 0 : _a.label} <i class="far fa-fw fa-chevron-right"></i>`}`;
+            this._videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this));
+            // Hide All Settings Buttons
+            this._settingsButtons.forEach((button, index) => {
+                button.addEventListener('click', () => {
+                    this._settingsMenu.classList.add('hide');
+                    const panel = this._settingsMenuPanels[index];
+                    panel.classList.add('show');
+                    const backButton = panel.querySelector('button:is(.action)');
+                    backButton.addEventListener('click', this.hideSettingsMenuPanel.bind(this));
+                });
+            });
+            // For Playback Speed Changer
+            const playbackSpeedButtons = this.settingsPanelButtons(1);
+            this.settingsAction(playbackSpeedButtons, this._playbackSpeed, 'data-speed', (speed) => {
+                this._videoEl.playbackRate = speed;
+                const indicatorEl = this._settingsButtons[1].querySelector('span:nth-child(2)');
+                indicatorEl.innerHTML = `${`${speed == 1 ? 'Normal' : speed} <i class="far fa-fw fa-chevron-right"></i>`}`;
+            });
+            // For Subtitle Changer
+            const captionsButtons = this.settingsPanelButtons(0);
+            this.settingsAction(captionsButtons, this._videoCaption, 'data-lang', (caption) => {
+                var _a;
+                this._videoCaption = caption;
+                this._selectedCaption = this._captionsArray.find(caption => caption.language == this._videoCaption);
+                this.runCaptions(this._selectedCaption);
+                const indicatorEl = this._settingsButtons[0].querySelector('span:nth-child(2)');
+                indicatorEl.innerHTML = `${`${(_a = this._selectedCaption) === null || _a === void 0 ? void 0 : _a.label} <i class="far fa-fw fa-chevron-right"></i>`}`;
+            });
+            (_b = this._buttons.play) === null || _b === void 0 ? void 0 : _b.addEventListener('click', this.playVideo.bind(this));
+            (_c = this._buttons.fullscreen) === null || _c === void 0 ? void 0 : _c.addEventListener('click', this.openFullScreen.bind(this));
+            (_d = this._buttons.picInPic) === null || _d === void 0 ? void 0 : _d.addEventListener('click', this.openPIP.bind(this));
+            (_e = this._buttons.captions) === null || _e === void 0 ? void 0 : _e.addEventListener('click', this.showCaptions.bind(this));
+            (_f = this._buttons.volume) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.muteVolume.bind(this));
+            (_g = this._buttons.theater) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.theaterMode.bind(this));
+            (_h = this._buttons.settings) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.openSettings.bind(this));
         });
-        (_a = this._buttons.play) === null || _a === void 0 ? void 0 : _a.addEventListener('click', this.playVideo.bind(this));
-        (_b = this._buttons.fullscreen) === null || _b === void 0 ? void 0 : _b.addEventListener('click', this.openFullScreen.bind(this));
-        (_c = this._buttons.picInPic) === null || _c === void 0 ? void 0 : _c.addEventListener('click', this.openPIP.bind(this));
-        (_d = this._buttons.captions) === null || _d === void 0 ? void 0 : _d.addEventListener('click', this.showCaptions.bind(this));
-        (_e = this._buttons.volume) === null || _e === void 0 ? void 0 : _e.addEventListener('click', this.muteVolume.bind(this));
-        (_f = this._buttons.theater) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.theaterMode.bind(this));
-        (_g = this._buttons.settings) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.openSettings.bind(this));
+    }
+    convertToBlob(url) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const request = yield fetch(url);
+            const response = yield request.blob();
+            const objectURL = URL.createObjectURL(response);
+            this._videoEl.src = objectURL;
+            const sourceEls = this._videoEl.querySelectorAll('source');
+            sourceEls.forEach(element => element.src = objectURL);
+        });
+    }
+    setCanvasDimension() {
+        this._ambientCanvas.height = this._videoEl.offsetHeight;
+        this._ambientCanvas.width = this._videoEl.offsetWidth;
+    }
+    paintStaticVideo() {
+        this._ctx.drawImage(this._videoEl, 0, 0, this._videoEl.offsetWidth, this._videoEl.offsetHeight);
     }
     hideSettingsPanelOutside(event) {
         const targetElement = event.target;
@@ -262,6 +302,15 @@ export class Videoary {
             this.showToast('Closed Captions is Off');
             icon === null || icon === void 0 ? void 0 : icon.classList.replace('fas', 'far');
         }
+    }
+    runAmbient() {
+        const loop = () => {
+            if (!this._videoEl.paused && !this._videoEl.ended) {
+                this._ctx.drawImage(this._videoEl, 0, 0, this._videoEl.offsetWidth, this._videoEl.offsetHeight);
+                setTimeout(loop, 1000 / 30);
+            }
+        };
+        loop();
     }
     playVideo() {
         this._posterEl.classList.add('hide');

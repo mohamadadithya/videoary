@@ -15,6 +15,10 @@
   font-family: inherit;
 }
 
+body {
+  background: hsl(0, 0%, 10%);
+}
+
 .videoary {
   font-family: var(--font-poppins);
   position: relative;
@@ -168,7 +172,7 @@
   input[type="range"] {
     color: var(--primaryColor);
     --thumb-height: 1em;
-    --track-height: 0.13em;
+    --track-height: 0.20em;
     --track-color: hsla(0, 0%, 80%, 0.5);
     --brightness-hover: 180%;
     --brightness-down: 80%;
@@ -249,7 +253,7 @@
       --clip-top: calc((var(--thumb-height) - var(--track-height)) * 0.5 - 0.5px);
       --clip-bottom: calc(var(--thumb-height) - var(--clip-top));
       --clip-further: calc(100% + 1px);
-      --box-fill: calc(-100vmax - var(--thumb-width, var(--thumb-height))) 0 0 100vmax currentColor;
+      --box-fill: calc(-100vmax - var(--thumb-width, var(--thumb-height))) 0 0 100.028vmax currentColor;
 
       width: var(--thumb-width, var(--thumb-height));
       background: linear-gradient(currentColor 0 0) scroll no-repeat left center / 50% calc(var(--track-height) + 1px);
@@ -443,6 +447,72 @@
         border-bottom: 1px solid rgb(245, 245, 245, 0.3);
       }
     }
+  }
+
+  .ambient-background {
+    position: absolute;
+    top: 0;
+    z-index: -1;
+    opacity: .5;
+    filter: blur(65px);
+    border-radius: 12px;
+    left: 50%;
+    top: 50%;
+    transform: scale(1.65) translate(-50%, -50%);
+    height: 100%;
+  }
+
+  .loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition: .3s all ease;
+
+    &:is(.hide) {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lds-ring {
+      display: inline-block;
+      position: relative;
+      width: 80px;
+      height: 80px;
+
+      div {
+        box-sizing: border-box;
+        display: block;
+        position: absolute;
+        width: 64px;
+        height: 64px;
+        margin: 8px;
+        border: 8px solid #fff;
+        border-radius: 50%;
+        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        border-color: #fff transparent transparent transparent;
+
+        &:nth-child(1) {
+          animation-delay: -0.45s;
+        }
+        &:nth-child(2) {
+          animation-delay: -0.3s;
+        }
+        &:nth-child(3) {
+          animation-delay: -0.15s;
+        }
+      }
+    }
+
+    @keyframes lds-ring {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }    
   }
 
   @import './partials/utils';

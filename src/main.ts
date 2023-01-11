@@ -33,6 +33,9 @@ export class Videoary {
     private _playIcon: HTMLElement
     private _videoCaptions: NodeListOf<HTMLTrackElement>
     private _videoCaption: String | null
+    private _ambientCanvas
+    private _ctx
+    private _loader
 
     constructor(options: Partial<Videoary>) {
         this.options = Object.assign(this, options)
@@ -67,9 +70,15 @@ export class Videoary {
         }
         this._playIcon = this._buttons.play?.querySelector('i') as HTMLElement
         this._videoCaptions = this._container.querySelectorAll('track')
+        this._ambientCanvas = this._container.querySelector('canvas') as HTMLCanvasElement
+        this._ctx = this._ambientCanvas.getContext('2d') as CanvasDrawImage
+        this._loader = this._container.querySelector('.loader') as HTMLDivElement
     }
 
-    init() {
+    async init() {
+        await this.convertToBlob(this.video?.source!)
+        this._loader.classList.add('hide')
+
         this._videoCaptions.forEach(caption => caption.track.mode = "hidden")
         this._bottomPanel.classList.add('showed-up')
 
@@ -77,6 +86,7 @@ export class Videoary {
         this._videoEl.addEventListener('click', this.playVideo.bind(this))
         this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'))
         this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this))
+        this._videoEl.addEventListener('play', this.runAmbient.bind(this))
 
         this._container.addEventListener('contextmenu', (event: MouseEvent) => event.preventDefault())
         this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this))
@@ -95,6 +105,11 @@ export class Videoary {
         this._volumeSlider.addEventListener('input', this.seekingVolume.bind(this))
         
         window.addEventListener('click', () => this._volumeSlider.classList.remove('active'))
+        window.addEventListener('resize', () => {
+            this.setCanvasDimension()
+            if(this._videoEl.paused) this.paintStaticVideo()
+        })
+        this._videoEl.addEventListener('seeked', this.paintStaticVideo.bind(this))
 
         this.runCaptions(this._selectedCaption)
         this._videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this))
@@ -136,6 +151,24 @@ export class Videoary {
         this._buttons.volume?.addEventListener('click', this.muteVolume.bind(this))
         this._buttons.theater?.addEventListener('click', this.theaterMode.bind(this))
         this._buttons.settings?.addEventListener('click', this.openSettings.bind(this))
+    }
+
+    private async convertToBlob(url: string) {
+        const request = await fetch(url)
+        const response = await request.blob()
+        const objectURL = URL.createObjectURL(response)
+        this._videoEl.src = objectURL
+        const sourceEls = this._videoEl.querySelectorAll('source') as NodeListOf<HTMLSourceElement>
+        sourceEls.forEach(element => element.src = objectURL)
+    }
+
+    private setCanvasDimension() {
+        this._ambientCanvas.height = this._videoEl.offsetHeight
+        this._ambientCanvas.width = this._videoEl.offsetWidth
+    }
+
+    private paintStaticVideo() {
+        this._ctx.drawImage(this._videoEl, 0, 0, this._videoEl.offsetWidth, this._videoEl.offsetHeight)
     }
 
     private hideSettingsPanelOutside(event: Event) {
@@ -301,6 +334,16 @@ export class Videoary {
             this.showToast('Closed Captions is Off')
             icon?.classList.replace('fas', 'far')
         }
+    }
+
+    private runAmbient() {
+        const loop = () => {
+            if(!this._videoEl.paused && !this._videoEl.ended) {
+                this._ctx.drawImage(this._videoEl, 0, 0, this._videoEl.offsetWidth, this._videoEl.offsetHeight)
+                setTimeout(loop, 1000 / 30)
+            }
+        }
+        loop()
     }
 
     private playVideo() {

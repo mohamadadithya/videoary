@@ -14,12 +14,16 @@ const formatDuration = (time: number) => {
 const render = (container: HTMLAreaElement, video: Video | undefined, subtitles: Subtitle[] | undefined, playbackSpeed: number, playbackSpeeds: Number[], videoCaption: String | null) => {
     container.innerHTML = `
     <div class="container videoary" id="videoary">
+    <div class="loader">
+        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+    </div>
     <div class="toast"></div>
     <img class="poster" ${video?.poster ? `src="/posters/${video.poster}"` : ''} />
-    <video preload>
-        <source src="/videos/${video?.src}.mp4" type="video/mp4" />
+    <canvas class="ambient-background"></canvas>
+    <video controlslist="nodownload" crossorigin="anonymous">
+        <source src="${video?.source}" type="video/mp4" />
         ${subtitles?.map((caption) => {
-        return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="/captions/${video?.src}/${caption.long.toLowerCase()}.vtt" default />`
+        return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`
         }).join('')}
     </video>
     <div class="captions-wrapper"></div>
@@ -39,7 +43,7 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
                     <input type="range" name="volume" id="volume" min="0" max="1" step=".001" value="0">
                 </li>
                 <li>
-                    <p id="duration-indicator"></p>
+                    <p id="duration-indicator">0:00</p>
                 </li>
             </ul>
             <ul class="videoary__bottom-panel__actions">

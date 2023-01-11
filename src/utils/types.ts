@@ -1,9 +1,10 @@
 export interface Video {
-    src: String,
+    source: string,
     poster: unknown
 }
 
 export interface Subtitle {
     short: String,
-    long: String
+    long: String,
+    source: String
 }
