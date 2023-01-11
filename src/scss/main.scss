@@ -237,7 +237,7 @@ body {
         var(--clip-edges) 0px,
         0 var(--clip-top),
         -100vmax var(--clip-top),
-        0 var(--clip-bottom),
+        -100vmax var(--clip-bottom),
         0 var(--clip-bottom),
         var(--clip-edges) 0%,
         var(--clip-further) var(--clip-further));
