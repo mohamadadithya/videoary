@@ -19,7 +19,7 @@ const render = (container, video, subtitles, playbackSpeed, playbackSpeeds, vide
     <img class="poster" ${(video === null || video === void 0 ? void 0 : video.poster) ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
     <video controlslist="nodownload" crossorigin="anonymous">
-        <source src="${video === null || video === void 0 ? void 0 : video.source}" type="video/mp4" />
+        <source />
         ${subtitles === null || subtitles === void 0 ? void 0 : subtitles.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`;
     }).join('')}

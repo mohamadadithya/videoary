@@ -21,7 +21,7 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     <img class="poster" ${video?.poster ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
     <video controlslist="nodownload" crossorigin="anonymous">
-        <source src="${video?.source}" type="video/mp4" />
+        <source />
         ${subtitles?.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`
         }).join('')}

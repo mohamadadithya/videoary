@@ -157,9 +157,12 @@ export class Videoary {
         const request = await fetch(url)
         const response = await request.blob()
         const objectURL = URL.createObjectURL(response)
-        this._videoEl.src = objectURL
         const sourceEls = this._videoEl.querySelectorAll('source') as NodeListOf<HTMLSourceElement>
-        sourceEls.forEach(element => element.src = objectURL)
+        sourceEls.forEach(element => {
+            element.src = objectURL
+            element.setAttribute('type', 'video/mp4')
+        })
+        this._videoEl.load()
     }
 
     private setCanvasDimension() {
