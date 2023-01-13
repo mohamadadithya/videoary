@@ -1,11 +1,13 @@
 import '../scss/main.scss'
 import { formatDuration, render } from './utils/helpers'
 import { Video, Subtitle } from './utils/types'
+import Hls from 'hls.js'
 
 export class Videoary {
     public containerArea: HTMLAreaElement
     public subtitles?: Subtitle[]
     public video?: Video
+    public accentColor: string = "hsl(353, 86%, 54%)"
     public options
     private _isPlayed: Boolean = false
     private _currentVolume: number = 1
@@ -36,6 +38,7 @@ export class Videoary {
     private _ambientCanvas
     private _ctx
     private _loader
+    private _touchTime: number = 0
 
     constructor(options: Partial<Videoary>) {
         this.options = Object.assign(this, options)
@@ -76,14 +79,18 @@ export class Videoary {
     }
 
     async init() {
-        await this.convertToBlob(this.video?.source!)
-        this._loader.classList.add('hide')
+        document.documentElement.style.setProperty('--primaryColor', this.accentColor)
+
+        await this.loadVideo(this.video?.source!)
+        this.showLoader(false)
+
+        this.screenRespond()
+        window.addEventListener('resize', this.screenRespond.bind(this))
 
         this._videoCaptions.forEach(caption => caption.track.mode = "hidden")
         this._bottomPanel.classList.add('showed-up')
 
         this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this))
-        this._videoEl.addEventListener('click', this.playVideo.bind(this))
         this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'))
         this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this))
         this._videoEl.addEventListener('play', this.runAmbient.bind(this))
@@ -153,15 +160,78 @@ export class Videoary {
         this._buttons.settings?.addEventListener('click', this.openSettings.bind(this))
     }
 
-    private async convertToBlob(url: string) {
-        const request = await fetch(url)
-        const response = await request.blob()
-        const objectURL = URL.createObjectURL(response)
-        const sourceEls = this._videoEl.querySelectorAll('source') as NodeListOf<HTMLSourceElement>
-        sourceEls.forEach(element => {
-            element.src = objectURL
-            element.setAttribute('type', 'video/mp4')
-        })
+    private screenRespond() {
+        if(window.matchMedia('screen and (min-width: 768px)').matches) {
+            this._videoEl.addEventListener('click', this.playVideo.bind(this))
+        } else {
+            this._videoEl.addEventListener('click', this.doubleClickPlay.bind(this))
+        }
+    }
+
+    private doubleClickPlay(event: Event) {
+        event.preventDefault()
+        if(this._touchTime == 0) {
+            this._touchTime = new Date().getTime()
+        } else {
+            if(((new Date().getTime()) - this._touchTime) < 800) {
+                this.playVideo()
+                this._touchTime = 0
+            } else {
+                this.idlingWatch(event)
+                this._touchTime = new Date().getTime()
+            }
+        }
+    }
+
+    private showLoader(status: boolean) {
+        if(status) {
+            this._loader.classList.remove('hide')
+        } else {
+            this._loader.classList.add('hide')
+        }
+    }
+
+    private async loadVideo(url: string) {
+        if(Hls.isSupported()) {
+            const hls = new Hls({ startLevel: -1 })
+            hls.attachMedia(this._videoEl)
+            hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(url))
+            hls.on(Hls.Events.ERROR, (event, { details }) => {
+                if(details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) this.showLoader(true)
+            })
+            hls.on(Hls.Events.FRAG_LOADING, () => this.showLoader(true))
+            hls.on(Hls.Events.BUFFER_APPENDED, () => this.showLoader(false))
+            hls.on(Hls.Events.FRAG_BUFFERED, () => this.showLoader(false))
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                const availableQualities = hls.levels.map((level, index) => {
+                    return {
+                        resolution: level.height,
+                        index
+                    }
+                })
+                availableQualities.unshift({ resolution: 0, index: -1 })
+                
+                availableQualities.forEach((quality) => {
+                    this._settingsMenuPanels[0].innerHTML += `<li><button data-quality="${quality.index}" type="button" class="w-full text-left quality-button">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`} <i class="fas fa-fw fa-check ${quality.index != -1 ? "hidden" : ""}"></i></button></li>`
+                })
+                const qualityButtons = this._container.querySelectorAll('.quality-button')
+                const qualitySettingIndicator = this._settingsButtons[0].querySelector('span:last-child') as HTMLSpanElement
+                qualityButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        qualityButtons.forEach(button => {
+                            const icon = button.querySelector('i')
+                            icon?.classList.add('hidden')
+                        })
+                        const qualityIndex = button.getAttribute('data-quality')
+                        hls.nextLevel = Number(qualityIndex)
+                        qualitySettingIndicator.innerHTML = `${button.textContent} <i class="far fa-fw fa-chevron-right"></i>`
+                        const icon = button.querySelector('i')
+                        icon?.classList.remove('hidden')
+                        this.hideSettingsMenuPanel()
+                    })
+                })
+            })
+        }
         this._videoEl.load()
     }
 
@@ -239,16 +309,21 @@ export class Videoary {
         }
     }
 
-    private loadedVideo(event: Event) {
-        const indicatorEl = event.target as HTMLVideoElement
-        this._durationIndicator.textContent = `0:00 / ${formatDuration(indicatorEl.duration)}`
-        this._durationSlider.max = indicatorEl.duration.toString()
-        this._volumeSlider.value = indicatorEl.volume.toString()
+    private loadedVideo() {
+        this._durationIndicator.textContent = `0:00 / ${formatDuration(this._videoEl.duration)}`
+        this._durationSlider.max = String(this._videoEl.duration)
+        this._volumeSlider.value = String(this._videoEl.volume)
     }
 
     private runDuration() {
         const time = this._videoEl.currentTime
-        this._durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(this._videoEl.duration)}`
+        const duration = this._videoEl.duration
+        const bufferedProgressEl = this._container.querySelector('.buffered-progress') as HTMLDivElement
+        if(this._videoEl.buffered.length > 0) {
+            let width = 100 * (this._videoEl.buffered.end(0)) / duration
+            bufferedProgressEl.style.width = `${String(width)}%`
+        }
+        this._durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(duration)}`
         this._durationSlider.value = time.toString()
     }
 
@@ -306,7 +381,6 @@ export class Videoary {
         const icon = event.target as HTMLElement
         icon.style.transition = '.3s all ease'
         this._settingsMenu.classList.toggle('active')
-        setTimeout(this.hideSettingsMenuPanel, 300)
         if(this._settingsMenu.classList.contains('active')) {
             this._tooltips.forEach(tip => tip.setAttribute('aria-disabled', 'true'))
             icon.style.rotate = "30deg"
@@ -370,7 +444,6 @@ export class Videoary {
         this._idleState = false
         this._idleTimer = setTimeout(() => {
             if(!elementTarget.closest('.videoary__bottom-panel')) {
-                console.log();
                 this.hideBottomPanel()
                 this._idleState = true
                 this._container.style.cursor = "none"

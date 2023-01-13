@@ -1,6 +1,11 @@
+interface Source {
+    url: string,
+    resolution: string
+}
+
 export interface Video {
     source: string,
-    poster: unknown
+    poster: string | null
 }
 
 export interface Subtitle {

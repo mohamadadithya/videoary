@@ -3,12 +3,14 @@ lockfileVersion: 5.4
 specifiers:
   autoprefixer: ^10.4.13
   esbuild: 0.16.14
+  hls.js: ^1.3.0
   sass: ^1.57.1
   typescript: ^4.9.4
   vite: ^3.1.0
 
 dependencies:
   esbuild: 0.16.14
+  hls.js: 1.3.0
   typescript: 4.9.4
 
 devDependencies:
@@ -584,6 +586,10 @@ packages:
     dependencies:
       function-bind: 1.1.1
     dev: true
+
+  /hls.js/1.3.0:
+    resolution: {integrity: sha512-mhCgOFd84OJOcR5JQBSEKIKtxJtlotmUnnYo9+O1orGIl3ROaGtxZghsuVirVumt+4gJJIgiTA72ynqZRk+eCg==}
+    dev: false
 
   /immutable/4.2.1:
     resolution: {integrity: sha512-7WYV7Q5BTs0nlQm7tl92rDYYoyELLKHoDMBKhrxEoiV4mrfVdRz8hzPiYOzH7yWjzoVEamxRuAqhxL2PLRwZYQ==}

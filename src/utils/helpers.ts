@@ -1,13 +1,17 @@
 import { Video, Subtitle } from "./types"
 
 const formatDuration = (time: number) => {
-    const seconds = Math.floor(time % 60).toLocaleString('en-US', { minimumIntegerDigits: 2 })
-    const minutes = (Math.floor(time / 60) % 60)
-    const hours = Math.floor(time / 3600)
-    if(hours >= 1) {
-        return `${hours}:${minutes}:${seconds}`
+    if(!isNaN(time)) {
+        const seconds = Math.floor(time % 60).toLocaleString('en-US', { minimumIntegerDigits: 2 })
+        const minutes = (Math.floor(time / 60) % 60)
+        const hours = Math.floor(time / 3600)
+        if(hours >= 1) {
+            return `${hours}:${minutes}:${seconds}`
+        } else {
+            return `${minutes}:${seconds}`
+        }
     } else {
-        return `${minutes}:${seconds}`
+        return "0:00"
     }
 }
 
@@ -21,7 +25,6 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     <img class="poster" ${video?.poster ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
     <video controlslist="nodownload" crossorigin="anonymous">
-        <source />
         ${subtitles?.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`
         }).join('')}
@@ -29,6 +32,7 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     <div class="captions-wrapper"></div>
     <div class="videoary__bottom-panel">
         <div class="duration-wrapper">
+            <div class="buffered-progress"></div>
             <input type="range" name="duration" id="duration" value="0" min="0" step=".001">
         </div>
         <div class="actions-wrapper">
@@ -72,6 +76,18 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
         <li>
         <button type="button" class="flex justify-between items-center w-full">
             <span>
+            <i class="far fa-fw fa-sliders"></i>
+            Quality
+            </span>
+            <span>
+            Auto
+            <i class="far fa-fw fa-chevron-right"></i>
+            </span>
+        </button>
+        </li>
+        <li>
+        <button type="button" class="flex justify-between items-center w-full">
+            <span>
             <i class="far fa-fw fa-closed-captioning"></i>
             Subtitles/CC
             </span>
@@ -91,6 +107,9 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
             </span>
         </button>
         </li>
+        <ul class="settings-menu-panel text-sm">
+        <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Quality</li>
+        </ul>
         <ul class="settings-menu-panel text-sm">
         <li><button type="button" class="action"><i class="far fa-fw fa-chevron-left"></i></button> Subtitles/CC</li>
         ${subtitles?.map((caption) => {

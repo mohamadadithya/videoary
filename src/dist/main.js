@@ -9,9 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import '../scss/main.scss';
 import { formatDuration, render } from './utils/helpers';
+import Hls from 'hls.js';
 export class Videoary {
     constructor(options) {
         var _a;
+        this.accentColor = "hsl(353, 86%, 54%)";
         this._isPlayed = false;
         this._currentVolume = 1;
         this._playbackSpeed = 1;
@@ -19,6 +21,7 @@ export class Videoary {
         this._idleState = false;
         this._idleDuration = 3500;
         this._playbackSpeeds = [0.25, 0.5, 0.7, 1, 1.25, 1.5, 1.75, 2];
+        this._touchTime = 0;
         this.options = Object.assign(this, options);
         this.subtitles = options.subtitles;
         this.video = options.video;
@@ -58,12 +61,14 @@ export class Videoary {
     init() {
         var _a, _b, _c, _d, _e, _f, _g, _h;
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.convertToBlob((_a = this.video) === null || _a === void 0 ? void 0 : _a.source);
-            this._loader.classList.add('hide');
+            document.documentElement.style.setProperty('--primaryColor', this.accentColor);
+            yield this.loadVideo((_a = this.video) === null || _a === void 0 ? void 0 : _a.source);
+            this.showLoader(false);
+            this.screenRespond();
+            window.addEventListener('resize', this.screenRespond.bind(this));
             this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
             this._bottomPanel.classList.add('showed-up');
             this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this));
-            this._videoEl.addEventListener('click', this.playVideo.bind(this));
             this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'));
             this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this));
             this._videoEl.addEventListener('play', this.runAmbient.bind(this));
@@ -124,16 +129,80 @@ export class Videoary {
             (_h = this._buttons.settings) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.openSettings.bind(this));
         });
     }
-    convertToBlob(url) {
+    screenRespond() {
+        if (window.matchMedia('screen and (min-width: 768px)').matches) {
+            this._videoEl.addEventListener('click', this.playVideo.bind(this));
+        }
+        else {
+            this._videoEl.addEventListener('click', this.doubleClickPlay.bind(this));
+        }
+    }
+    doubleClickPlay(event) {
+        event.preventDefault();
+        if (this._touchTime == 0) {
+            this._touchTime = new Date().getTime();
+        }
+        else {
+            if (((new Date().getTime()) - this._touchTime) < 800) {
+                this.playVideo();
+                this._touchTime = 0;
+            }
+            else {
+                this.idlingWatch(event);
+                this._touchTime = new Date().getTime();
+            }
+        }
+    }
+    showLoader(status) {
+        if (status) {
+            this._loader.classList.remove('hide');
+        }
+        else {
+            this._loader.classList.add('hide');
+        }
+    }
+    loadVideo(url) {
         return __awaiter(this, void 0, void 0, function* () {
-            const request = yield fetch(url);
-            const response = yield request.blob();
-            const objectURL = URL.createObjectURL(response);
-            const sourceEls = this._videoEl.querySelectorAll('source');
-            sourceEls.forEach(element => {
-                element.src = objectURL;
-                element.setAttribute('type', 'video/mp4');
-            });
+            if (Hls.isSupported()) {
+                const hls = new Hls({ startLevel: -1 });
+                hls.attachMedia(this._videoEl);
+                hls.on(Hls.Events.MEDIA_ATTACHED, () => hls.loadSource(url));
+                hls.on(Hls.Events.ERROR, (event, { details }) => {
+                    if (details === Hls.ErrorDetails.BUFFER_STALLED_ERROR)
+                        this.showLoader(true);
+                });
+                hls.on(Hls.Events.FRAG_LOADING, () => this.showLoader(true));
+                hls.on(Hls.Events.BUFFER_APPENDED, () => this.showLoader(false));
+                hls.on(Hls.Events.FRAG_BUFFERED, () => this.showLoader(false));
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    const availableQualities = hls.levels.map((level, index) => {
+                        return {
+                            resolution: level.height,
+                            index
+                        };
+                    });
+                    availableQualities.unshift({ resolution: 0, index: -1 });
+                    availableQualities.forEach((quality) => {
+                        this._settingsMenuPanels[0].innerHTML += `<li><button data-quality="${quality.index}" type="button" class="w-full text-left quality-button">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`} <i class="fas fa-fw fa-check ${quality.index != -1 ? "hidden" : ""}"></i></button></li>`;
+                    });
+                    const qualityButtons = this._container.querySelectorAll('.quality-button');
+                    const qualitySettingIndicator = this._settingsButtons[0].querySelector('span:last-child');
+                    qualityButtons.forEach(button => {
+                        button.addEventListener('click', () => {
+                            qualityButtons.forEach(button => {
+                                const icon = button.querySelector('i');
+                                icon === null || icon === void 0 ? void 0 : icon.classList.add('hidden');
+                            });
+                            const qualityIndex = button.getAttribute('data-quality');
+                            hls.nextLevel = Number(qualityIndex);
+                            qualitySettingIndicator.innerHTML = `${button.textContent} <i class="far fa-fw fa-chevron-right"></i>`;
+                            const icon = button.querySelector('i');
+                            icon === null || icon === void 0 ? void 0 : icon.classList.remove('hidden');
+                            this.hideSettingsMenuPanel();
+                        });
+                    });
+                });
+            }
             this._videoEl.load();
         });
     }
@@ -214,15 +283,20 @@ export class Videoary {
             this.showCaptions();
         }
     }
-    loadedVideo(event) {
-        const indicatorEl = event.target;
-        this._durationIndicator.textContent = `0:00 / ${formatDuration(indicatorEl.duration)}`;
-        this._durationSlider.max = indicatorEl.duration.toString();
-        this._volumeSlider.value = indicatorEl.volume.toString();
+    loadedVideo() {
+        this._durationIndicator.textContent = `0:00 / ${formatDuration(this._videoEl.duration)}`;
+        this._durationSlider.max = String(this._videoEl.duration);
+        this._volumeSlider.value = String(this._videoEl.volume);
     }
     runDuration() {
         const time = this._videoEl.currentTime;
-        this._durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(this._videoEl.duration)}`;
+        const duration = this._videoEl.duration;
+        const bufferedProgressEl = this._container.querySelector('.buffered-progress');
+        if (this._videoEl.buffered.length > 0) {
+            let width = 100 * (this._videoEl.buffered.end(0)) / duration;
+            bufferedProgressEl.style.width = `${String(width)}%`;
+        }
+        this._durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(duration)}`;
         this._durationSlider.value = time.toString();
     }
     settingsPanelButtons(panelIndex) {
@@ -274,7 +348,6 @@ export class Videoary {
         const icon = event.target;
         icon.style.transition = '.3s all ease';
         this._settingsMenu.classList.toggle('active');
-        setTimeout(this.hideSettingsMenuPanel, 300);
         if (this._settingsMenu.classList.contains('active')) {
             this._tooltips.forEach(tip => tip.setAttribute('aria-disabled', 'true'));
             icon.style.rotate = "30deg";
@@ -337,7 +410,6 @@ export class Videoary {
         this._idleState = false;
         this._idleTimer = setTimeout(() => {
             if (!elementTarget.closest('.videoary__bottom-panel')) {
-                console.log();
                 this.hideBottomPanel();
                 this._idleState = true;
                 this._container.style.cursor = "none";
