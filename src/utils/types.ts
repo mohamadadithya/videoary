@@ -1,8 +1,3 @@
-interface Source {
-    url: string,
-    resolution: string
-}
-
 export interface Video {
     source: string,
     poster: string | null

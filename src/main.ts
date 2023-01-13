@@ -5,7 +5,7 @@ import Hls from 'hls.js'
 
 export class Videoary {
     public containerArea: HTMLAreaElement
-    public subtitles?: Subtitle[]
+    public subtitles?: Subtitle[] | null
     public video?: Video
     public accentColor: string = "hsl(353, 86%, 54%)"
     public options
@@ -46,7 +46,7 @@ export class Videoary {
         this.video = options.video
         this._videoCaption = this.subtitles ? this.subtitles[0].short : null
         this.containerArea = options.containerArea as HTMLAreaElement
-        render(this.containerArea, this.video, this.subtitles, this._playbackSpeed, this._playbackSpeeds, this._videoCaption)
+        render(this.containerArea, this.video, this.subtitles!, this._playbackSpeed, this._playbackSpeeds, this._videoCaption)
         this._container = this.containerArea.querySelector('.videoary') as HTMLAreaElement
         this._settingsMenuPanels = this._container.querySelectorAll('.settings-menu-panel')
         this._tooltips = this._container.querySelectorAll('div[role="tooltip"]')
@@ -80,6 +80,11 @@ export class Videoary {
 
     async init() {
         document.documentElement.style.setProperty('--primaryColor', this.accentColor)
+        if(!this.subtitles) {
+            this._settingsButtons[1].classList.add('hidden')
+            this._settingsMenuPanels[1].classList.add('hidden')
+            this._buttons.captions?.classList.add('hidden')
+        }
 
         await this.loadVideo(this.video?.source!)
         this.showLoader(false)
@@ -118,7 +123,7 @@ export class Videoary {
         })
         this._videoEl.addEventListener('seeked', this.paintStaticVideo.bind(this))
 
-        this.runCaptions(this._selectedCaption)
+        if(this.subtitles) this.runCaptions(this._selectedCaption)
         this._videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this))
 
         // Hide All Settings Buttons
@@ -184,11 +189,7 @@ export class Videoary {
     }
 
     private showLoader(status: boolean) {
-        if(status) {
-            this._loader.classList.remove('hide')
-        } else {
-            this._loader.classList.add('hide')
-        }
+        status ? this._loader.classList.remove('hide') : this._loader.classList.add('hide')
     }
 
     private async loadVideo(url: string) {
@@ -289,7 +290,7 @@ export class Videoary {
             this.hideBottomPanel()
             this._container.style.cursor = "none"
         }, this._idleDuration)
-          if (event.key == "ArrowRight") {
+        if (event.key == "ArrowRight") {
             this._videoEl.currentTime += 5
         } else if (event.key == "ArrowLeft") {
             this._videoEl.currentTime -= 5

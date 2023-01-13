@@ -59,10 +59,15 @@ export class Videoary {
         this._loader = this._container.querySelector('.loader');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         return __awaiter(this, void 0, void 0, function* () {
             document.documentElement.style.setProperty('--primaryColor', this.accentColor);
-            yield this.loadVideo((_a = this.video) === null || _a === void 0 ? void 0 : _a.source);
+            if (!this.subtitles) {
+                this._settingsButtons[1].classList.add('hidden');
+                this._settingsMenuPanels[1].classList.add('hidden');
+                (_a = this._buttons.captions) === null || _a === void 0 ? void 0 : _a.classList.add('hidden');
+            }
+            yield this.loadVideo((_b = this.video) === null || _b === void 0 ? void 0 : _b.source);
             this.showLoader(false);
             this.screenRespond();
             window.addEventListener('resize', this.screenRespond.bind(this));
@@ -91,7 +96,8 @@ export class Videoary {
                     this.paintStaticVideo();
             });
             this._videoEl.addEventListener('seeked', this.paintStaticVideo.bind(this));
-            this.runCaptions(this._selectedCaption);
+            if (this.subtitles)
+                this.runCaptions(this._selectedCaption);
             this._videoEl.addEventListener('leavepictureinpicture', this.leavePIP.bind(this));
             // Hide All Settings Buttons
             this._settingsButtons.forEach((button, index) => {
@@ -120,13 +126,13 @@ export class Videoary {
                 const indicatorEl = this._settingsButtons[0].querySelector('span:nth-child(2)');
                 indicatorEl.innerHTML = `${`${(_a = this._selectedCaption) === null || _a === void 0 ? void 0 : _a.label} <i class="far fa-fw fa-chevron-right"></i>`}`;
             });
-            (_b = this._buttons.play) === null || _b === void 0 ? void 0 : _b.addEventListener('click', this.playVideo.bind(this));
-            (_c = this._buttons.fullscreen) === null || _c === void 0 ? void 0 : _c.addEventListener('click', this.openFullScreen.bind(this));
-            (_d = this._buttons.picInPic) === null || _d === void 0 ? void 0 : _d.addEventListener('click', this.openPIP.bind(this));
-            (_e = this._buttons.captions) === null || _e === void 0 ? void 0 : _e.addEventListener('click', this.showCaptions.bind(this));
-            (_f = this._buttons.volume) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.muteVolume.bind(this));
-            (_g = this._buttons.theater) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.theaterMode.bind(this));
-            (_h = this._buttons.settings) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.openSettings.bind(this));
+            (_c = this._buttons.play) === null || _c === void 0 ? void 0 : _c.addEventListener('click', this.playVideo.bind(this));
+            (_d = this._buttons.fullscreen) === null || _d === void 0 ? void 0 : _d.addEventListener('click', this.openFullScreen.bind(this));
+            (_e = this._buttons.picInPic) === null || _e === void 0 ? void 0 : _e.addEventListener('click', this.openPIP.bind(this));
+            (_f = this._buttons.captions) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.showCaptions.bind(this));
+            (_g = this._buttons.volume) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.muteVolume.bind(this));
+            (_h = this._buttons.theater) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.theaterMode.bind(this));
+            (_j = this._buttons.settings) === null || _j === void 0 ? void 0 : _j.addEventListener('click', this.openSettings.bind(this));
         });
     }
     screenRespond() {
@@ -154,12 +160,7 @@ export class Videoary {
         }
     }
     showLoader(status) {
-        if (status) {
-            this._loader.classList.remove('hide');
-        }
-        else {
-            this._loader.classList.add('hide');
-        }
+        status ? this._loader.classList.remove('hide') : this._loader.classList.add('hide');
     }
     loadVideo(url) {
         return __awaiter(this, void 0, void 0, function* () {
