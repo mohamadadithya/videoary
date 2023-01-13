@@ -42,6 +42,10 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
                     <div role="tooltip" aria-disabled="false" class="tooltip">Play (p)</div>
                 </li>
                 <li>
+                    <button id="next-button"><i class="fas fa-fw fa-forward-step"></i></button>
+                    <div role="tooltip" aria-disabled="false" class="tooltip">Next (n)</div>
+                </li>
+                <li>
                     <button><i class="fas fa-fw fa-volume" id="volume-button"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Mute (m)</div>
                     <input type="range" name="volume" id="volume" min="0" max="1" step=".001" value="0">

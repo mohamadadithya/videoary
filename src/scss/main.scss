@@ -129,8 +129,41 @@ body {
         display: block;
       }
 
-      &:nth-child(2) .tooltip {
-        right: 0;
+      .tooltip {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      &:nth-child(1) {
+        li:first-child > .tooltip {
+          transform: translateX(0);
+          left: -16px;
+          right: unset;
+        }
+      }
+
+      &:nth-child(2) {
+        li:last-child > .tooltip {
+          transform: translateX(0);
+          left: unset;
+          right: -16px;
+        }
+      }
+
+      &:nth-child(1) {
+        & > li {
+          &:not(:nth-child(3), :last-child) {
+            margin-right: 0.6em;
+          }
+        }
+      }
+
+      &:nth-child(2) {
+        & > li {
+          &:not(:last-child) {
+            margin-right: 0.6em;
+          }
+        }
       }
 
       & > li {
@@ -138,10 +171,6 @@ body {
 
         & > button {
           font-size: 1.3rem;
-        }
-
-        &:not(:last-child) {
-          margin-right: 0.6em;
         }
 
         &:last-child > p {
@@ -361,7 +390,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 0.2em;
 
     .tooltip {
       position: absolute;

@@ -3,10 +3,6 @@
         font-size: 0.8rem;
     }
 
-    .actions-wrapper {
-        margin-top: 0.2em;
-    }
-
     &__bottom-panel {
         background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.65));
 
@@ -16,9 +12,17 @@
             color: white;
             list-style: none;
             padding: 0 0.6em;
-    
+
             &>li>button {
                 font-size: 1rem;
+            }
+
+            &:nth-child(2) {
+                &>li {
+                    &:not(:nth-child(4)) {
+                        margin-right: 0.6em;
+                    }
+                }
             }
         }
     }
@@ -26,7 +30,7 @@
     &>.toast {
         font-size: 0.6rem;
     }
-    
+
     .ambient-background {
         height: 65%;
         top: 100%;
@@ -40,7 +44,19 @@
     }
 
     .videoary__bottom-panel__actions {
-        & > li:has(#theater-button) {
+        &>li:has(#theater-button) {
+            display: none;
+        }
+
+        .tooltip {
+            display: none !important;
+        }
+    }
+}
+
+@media (max-width: 820px) {
+    .videoary__bottom-panel__actions {
+        &>li:has(#theater-button) {
             display: none;
         }
 
