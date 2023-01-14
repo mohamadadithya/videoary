@@ -110,10 +110,10 @@ export class Videoary {
                 });
             });
             // For Playback Speed Changer
-            const playbackSpeedButtons = this.settingsPanelButtons(1);
+            const playbackSpeedButtons = this.settingsPanelButtons(2);
             this.settingsAction(playbackSpeedButtons, this._playbackSpeed, 'data-speed', (speed) => {
                 this._videoEl.playbackRate = speed;
-                const indicatorEl = this._settingsButtons[1].querySelector('span:nth-child(2)');
+                const indicatorEl = this._settingsButtons[2].querySelector('span:nth-child(2)');
                 indicatorEl.innerHTML = `${`${speed == 1 ? 'Normal' : speed} <i class="far fa-fw fa-chevron-right"></i>`}`;
             });
             // For Subtitle Changer
