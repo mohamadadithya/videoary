@@ -177,13 +177,14 @@ body {
           font-size: 0.8rem;
         }
 
-        &:nth-child(2) {
+        &:nth-child(3) {
           display: flex;
           align-items: center;
 
           &:hover > button ~ input {
             opacity: 1;
             width: 60px;
+            margin-right: 10px;
           }
         }
       }
@@ -199,6 +200,7 @@ body {
       &:is(.active, :hover) {
         opacity: 1;
         width: 60px;
+        margin-right: 10px;
       }
     }
   }
