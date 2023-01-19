@@ -40,6 +40,8 @@ export class Videoary {
     private _ctx
     private _loader
     private _actionsWrapperMobile: HTMLAreaElement
+    private _settingsPanelMobile: HTMLAreaElement
+    private _settingsMenuPanelsMobile: NodeListOf<HTMLAreaElement>
 
     constructor(options: Partial<Videoary>) {
         this.options = Object.assign(this, options)
@@ -75,7 +77,8 @@ export class Videoary {
             mobile: {
                 play: this._container.querySelector('.play-btn-mobile'),
                 fullscreen: this._container.querySelector('.fullscreen-btn-mobile'),
-                volume: this._container.querySelector('.volume-btn-mobile')
+                volume: this._container.querySelector('.volume-btn-mobile'),
+                settings: this._container.querySelector('.settings-btn-mobile')
             }
         }
         this._playIcon = this._buttons.play?.querySelector('i') as HTMLElement
@@ -84,6 +87,8 @@ export class Videoary {
         this._ctx = this._ambientCanvas.getContext('2d') as CanvasDrawImage
         this._loader = this._container.querySelector('.loader') as HTMLDivElement
         this._actionsWrapperMobile = this._container.querySelector('.actions-wrapper-mobile') as HTMLAreaElement
+        this._settingsPanelMobile = this._container.querySelector('.settings-panel-mobile') as HTMLAreaElement
+        this._settingsMenuPanelsMobile = this._settingsPanelMobile.querySelectorAll('.list li') as NodeListOf<HTMLAreaElement>
     }
 
     async init() {
@@ -107,7 +112,6 @@ export class Videoary {
 
         this._container.addEventListener('contextmenu', (event: MouseEvent) => event.preventDefault())
         this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this))
-
 
         this._videoEl.addEventListener('touchstart', () => {
             this._actionsWrapperMobile.classList.toggle('hide')
@@ -203,6 +207,9 @@ export class Videoary {
                 icon?.classList.replace('fa-volume-mute', 'fa-volume')
             }
         })
+        this._buttons.mobile.settings?.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'))
+        const settingsPanelMobileCloseButton = this._settingsPanelMobile?.querySelector('.close-btn')
+        settingsPanelMobileCloseButton?.addEventListener('click', () => this._settingsPanelMobile.classList.remove('showed'))
     }
 
     private showLoader(status: boolean) {
@@ -222,16 +229,27 @@ export class Videoary {
             hls.on(Hls.Events.FRAG_BUFFERED, () => this.showLoader(false))
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
                 const availableQualities = hls.levels.map((level, index) => {
-                    return {
-                        resolution: level.height,
-                        index
-                    }
+                    return { resolution: level.height, index }
                 })
                 availableQualities.unshift({ resolution: 0, index: -1 })
+                const captionsSelect = this._settingsMenuPanelsMobile[0].querySelector('select') as HTMLSelectElement
+                const mobileQualitySelect = this._settingsMenuPanelsMobile[1].querySelector('select') as HTMLSelectElement
+                const playbackSpeedSelect = this._settingsMenuPanelsMobile[2].querySelector('select') as HTMLSelectElement
+
+                this.subtitles?.forEach(caption => {
+                    captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`
+                })
+
+                this._playbackSpeeds.forEach(speed => {
+                    playbackSpeedSelect.innerHTML += `<option ${speed == 1 ? 'selected' : ''} value="${speed}">${`${speed == 1 ? 'Normal' : speed}`}</option>`
+                })
                 
                 availableQualities.forEach((quality) => {
                     this._settingsMenuPanels[0].innerHTML += `<li><button data-quality="${quality.index}" type="button" class="w-full text-left quality-button">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`} <i class="fas fa-fw fa-check ${quality.index != -1 ? "hidden" : ""}"></i></button></li>`
+                    // For Mobile
+                    mobileQualitySelect.innerHTML += `<option value="${quality.index}">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`}</option>`
                 })
+
                 const qualityButtons = this._container.querySelectorAll('.quality-button')
                 const qualitySettingIndicator = this._settingsButtons[0].querySelector('span:last-child') as HTMLSpanElement
                 qualityButtons.forEach(button => {

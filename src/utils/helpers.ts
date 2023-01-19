@@ -38,6 +38,30 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
             </li>
         </ul>
     </div>
+    <div class="settings-panel-mobile">
+        <div class="wrapper">
+            <div class="head">
+                <h3>Settings</h3>
+            </div>
+            <div class="wrapper-child">
+            <ul class="list">
+                <li>
+                    <label for="captions">Captions</label>
+                    <select name="captions" id="captions"></select>
+                </li>
+                <li>
+                    <label for="quality">Quality</label>
+                    <select name="quality" id="quality"></select>
+                </li>
+                <li>
+                    <label for="speed">Speed</label>
+                    <select name="speed" id="speed"></select>
+                </li>
+            </ul>
+            <button class="close-btn" type="button">OK</button>
+            </div>
+        </div>
+    </div>
     <video controlslist="nodownload" crossorigin="anonymous">
         ${subtitles?.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`

@@ -54,7 +54,8 @@ export class Videoary {
             mobile: {
                 play: this._container.querySelector('.play-btn-mobile'),
                 fullscreen: this._container.querySelector('.fullscreen-btn-mobile'),
-                volume: this._container.querySelector('.volume-btn-mobile')
+                volume: this._container.querySelector('.volume-btn-mobile'),
+                settings: this._container.querySelector('.settings-btn-mobile')
             }
         };
         this._playIcon = (_a = this._buttons.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
@@ -63,9 +64,11 @@ export class Videoary {
         this._ctx = this._ambientCanvas.getContext('2d');
         this._loader = this._container.querySelector('.loader');
         this._actionsWrapperMobile = this._container.querySelector('.actions-wrapper-mobile');
+        this._settingsPanelMobile = this._container.querySelector('.settings-panel-mobile');
+        this._settingsMenuPanelsMobile = this._settingsPanelMobile.querySelectorAll('.list li');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
         return __awaiter(this, void 0, void 0, function* () {
             document.documentElement.style.setProperty('--primaryColor', this.accentColor);
             if (!this.subtitles) {
@@ -172,6 +175,9 @@ export class Videoary {
                     icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-volume-mute', 'fa-volume');
                 }
             });
+            (_o = this._buttons.mobile.settings) === null || _o === void 0 ? void 0 : _o.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'));
+            const settingsPanelMobileCloseButton = (_p = this._settingsPanelMobile) === null || _p === void 0 ? void 0 : _p.querySelector('.close-btn');
+            settingsPanelMobileCloseButton === null || settingsPanelMobileCloseButton === void 0 ? void 0 : settingsPanelMobileCloseButton.addEventListener('click', () => this._settingsPanelMobile.classList.remove('showed'));
         });
     }
     showLoader(status) {
@@ -191,15 +197,24 @@ export class Videoary {
                 hls.on(Hls.Events.BUFFER_APPENDED, () => this.showLoader(false));
                 hls.on(Hls.Events.FRAG_BUFFERED, () => this.showLoader(false));
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    var _a;
                     const availableQualities = hls.levels.map((level, index) => {
-                        return {
-                            resolution: level.height,
-                            index
-                        };
+                        return { resolution: level.height, index };
                     });
                     availableQualities.unshift({ resolution: 0, index: -1 });
+                    const captionsSelect = this._settingsMenuPanelsMobile[0].querySelector('select');
+                    const mobileQualitySelect = this._settingsMenuPanelsMobile[1].querySelector('select');
+                    const playbackSpeedSelect = this._settingsMenuPanelsMobile[2].querySelector('select');
+                    (_a = this.subtitles) === null || _a === void 0 ? void 0 : _a.forEach(caption => {
+                        captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`;
+                    });
+                    this._playbackSpeeds.forEach(speed => {
+                        playbackSpeedSelect.innerHTML += `<option ${speed == 1 ? 'selected' : ''} value="${speed}">${`${speed == 1 ? 'Normal' : speed}`}</option>`;
+                    });
                     availableQualities.forEach((quality) => {
                         this._settingsMenuPanels[0].innerHTML += `<li><button data-quality="${quality.index}" type="button" class="w-full text-left quality-button">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`} <i class="fas fa-fw fa-check ${quality.index != -1 ? "hidden" : ""}"></i></button></li>`;
+                        // For Mobile
+                        mobileQualitySelect.innerHTML += `<option value="${quality.index}">${quality.resolution == 0 ? "Auto" : `${quality.resolution}p`}</option>`;
                     });
                     const qualityButtons = this._container.querySelectorAll('.quality-button');
                     const qualitySettingIndicator = this._settingsButtons[0].querySelector('span:last-child');
