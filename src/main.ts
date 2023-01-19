@@ -193,7 +193,7 @@ export class Videoary {
         this._buttons.theater?.addEventListener('click', this.theaterMode.bind(this))
         this._buttons.settings?.addEventListener('click', this.openSettings.bind(this))
         this._buttons.mobile.play?.addEventListener('click', this.playVideo.bind(this))
-        this._buttons.mobile.fullscreen?.addEventListener('click', this.openFullScreen.bind(this))
+        this._buttons.mobile.fullscreen?.addEventListener('click', this.openFullScreenMobile.bind(this))
         this._buttons.mobile.volume?.addEventListener('click', () => {
             this.muteVolume()
             const icon = this._buttons.mobile.volume?.querySelector('i')
@@ -203,6 +203,16 @@ export class Videoary {
                 icon?.classList.replace('fa-volume-mute', 'fa-volume')
             }
         })
+    }
+
+    private openFullScreenMobile() {
+        this._container.classList.toggle('fullscreen')
+        const icon = this._buttons.mobile.fullscreen?.querySelector('i')
+        if(this._container.classList.contains('fullscreen')) {
+            icon?.classList.replace('fa-expand', 'fa-compress')
+        } else {
+            icon?.classList.replace('fa-compress', 'fa-expand')
+        }
     }
 
     private showLoader(status: boolean) {

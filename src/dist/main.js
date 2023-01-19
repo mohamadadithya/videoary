@@ -160,7 +160,7 @@ export class Videoary {
             (_h = this._buttons.theater) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.theaterMode.bind(this));
             (_j = this._buttons.settings) === null || _j === void 0 ? void 0 : _j.addEventListener('click', this.openSettings.bind(this));
             (_k = this._buttons.mobile.play) === null || _k === void 0 ? void 0 : _k.addEventListener('click', this.playVideo.bind(this));
-            (_l = this._buttons.mobile.fullscreen) === null || _l === void 0 ? void 0 : _l.addEventListener('click', this.openFullScreen.bind(this));
+            (_l = this._buttons.mobile.fullscreen) === null || _l === void 0 ? void 0 : _l.addEventListener('click', this.openFullScreenMobile.bind(this));
             (_m = this._buttons.mobile.volume) === null || _m === void 0 ? void 0 : _m.addEventListener('click', () => {
                 var _a;
                 this.muteVolume();
@@ -173,6 +173,17 @@ export class Videoary {
                 }
             });
         });
+    }
+    openFullScreenMobile() {
+        var _a;
+        this._container.classList.toggle('fullscreen');
+        const icon = (_a = this._buttons.mobile.fullscreen) === null || _a === void 0 ? void 0 : _a.querySelector('i');
+        if (this._container.classList.contains('fullscreen')) {
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-expand', 'fa-compress');
+        }
+        else {
+            icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-compress', 'fa-expand');
+        }
     }
     showLoader(status) {
         status ? this._loader.classList.remove('hide') : this._loader.classList.add('hide');
