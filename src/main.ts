@@ -114,7 +114,7 @@ export class Videoary {
         this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this))
 
         this._videoEl.addEventListener('touchstart', () => {
-            this._actionsWrapperMobile.classList.toggle('hide')
+            if(!this._videoEl.paused) this._actionsWrapperMobile.classList.toggle('hide')
             if(this._actionsWrapperMobile.classList.contains('hide')) {
                 this._bottomPanel.classList.remove('showed-up')
                 this._captionsWrapper.classList.add('get-down')
@@ -127,10 +127,17 @@ export class Videoary {
         document.addEventListener('touchstart', (event) => {
             const targetElement = event.target as HTMLElement
             if(!targetElement.closest('.videoary')) {
-                this._actionsWrapperMobile.classList.add('hide')
-                this._bottomPanel.classList.remove('showed-up')
-                this._captionsWrapper.classList.add('get-down')
+                if(!this._videoEl.paused) {
+                    this._actionsWrapperMobile.classList.add('hide')
+                    this._bottomPanel.classList.remove('showed-up')
+                    this._captionsWrapper.classList.add('get-down')
+                }
             }
+        })
+
+        this._settingsPanelMobile.addEventListener('touchstart', (event: Event) => {
+            const targetElement = event.target as HTMLElement
+            if(!targetElement.closest('.settings-panel-mobile .wrapper')) this._settingsPanelMobile.classList.remove('showed')
         })
 
         if (window.matchMedia('screen and (min-width: 768px)').matches) {
@@ -236,9 +243,24 @@ export class Videoary {
                 const mobileQualitySelect = this._settingsMenuPanelsMobile[1].querySelector('select') as HTMLSelectElement
                 const playbackSpeedSelect = this._settingsMenuPanelsMobile[2].querySelector('select') as HTMLSelectElement
 
-                this.subtitles?.forEach(caption => {
-                    captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`
+                captionsSelect.addEventListener('change', (event: Event) => {
+                    const targetElement = event.target as HTMLSelectElement
+                    this._videoCaption = targetElement.value
+                    this._selectedCaption = this._captionsArray.find(caption => caption.language == this._videoCaption) as TextTrack
+                    this.runCaptions(this._selectedCaption)
                 })
+
+                mobileQualitySelect.addEventListener('change', (event: Event) => {
+                    const targetElement = event.target as HTMLSelectElement
+                    hls.nextLevel = Number(targetElement.value)
+                })
+
+                playbackSpeedSelect.addEventListener('change', (event: Event) => {
+                    const targetElement = event.target as HTMLSelectElement
+                    this._videoEl.playbackRate = Number(targetElement.value)
+                })
+
+                this.subtitles?.forEach(caption => captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`)
 
                 this._playbackSpeeds.forEach(speed => {
                     playbackSpeedSelect.innerHTML += `<option ${speed == 1 ? 'selected' : ''} value="${speed}">${`${speed == 1 ? 'Normal' : speed}`}</option>`

@@ -87,7 +87,8 @@ export class Videoary {
             this._container.addEventListener('contextmenu', (event) => event.preventDefault());
             this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this));
             this._videoEl.addEventListener('touchstart', () => {
-                this._actionsWrapperMobile.classList.toggle('hide');
+                if (!this._videoEl.paused)
+                    this._actionsWrapperMobile.classList.toggle('hide');
                 if (this._actionsWrapperMobile.classList.contains('hide')) {
                     this._bottomPanel.classList.remove('showed-up');
                     this._captionsWrapper.classList.add('get-down');
@@ -100,10 +101,17 @@ export class Videoary {
             document.addEventListener('touchstart', (event) => {
                 const targetElement = event.target;
                 if (!targetElement.closest('.videoary')) {
-                    this._actionsWrapperMobile.classList.add('hide');
-                    this._bottomPanel.classList.remove('showed-up');
-                    this._captionsWrapper.classList.add('get-down');
+                    if (!this._videoEl.paused) {
+                        this._actionsWrapperMobile.classList.add('hide');
+                        this._bottomPanel.classList.remove('showed-up');
+                        this._captionsWrapper.classList.add('get-down');
+                    }
                 }
+            });
+            this._settingsPanelMobile.addEventListener('touchstart', (event) => {
+                const targetElement = event.target;
+                if (!targetElement.closest('.settings-panel-mobile .wrapper'))
+                    this._settingsPanelMobile.classList.remove('showed');
             });
             if (window.matchMedia('screen and (min-width: 768px)').matches) {
                 this._videoEl.addEventListener('click', this.playVideo.bind(this));
@@ -205,9 +213,21 @@ export class Videoary {
                     const captionsSelect = this._settingsMenuPanelsMobile[0].querySelector('select');
                     const mobileQualitySelect = this._settingsMenuPanelsMobile[1].querySelector('select');
                     const playbackSpeedSelect = this._settingsMenuPanelsMobile[2].querySelector('select');
-                    (_a = this.subtitles) === null || _a === void 0 ? void 0 : _a.forEach(caption => {
-                        captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`;
+                    captionsSelect.addEventListener('change', (event) => {
+                        const targetElement = event.target;
+                        this._videoCaption = targetElement.value;
+                        this._selectedCaption = this._captionsArray.find(caption => caption.language == this._videoCaption);
+                        this.runCaptions(this._selectedCaption);
                     });
+                    mobileQualitySelect.addEventListener('change', (event) => {
+                        const targetElement = event.target;
+                        hls.nextLevel = Number(targetElement.value);
+                    });
+                    playbackSpeedSelect.addEventListener('change', (event) => {
+                        const targetElement = event.target;
+                        this._videoEl.playbackRate = Number(targetElement.value);
+                    });
+                    (_a = this.subtitles) === null || _a === void 0 ? void 0 : _a.forEach(caption => captionsSelect.innerHTML += `<option value="${caption.short}">${caption.long}</option>`);
                     this._playbackSpeeds.forEach(speed => {
                         playbackSpeedSelect.innerHTML += `<option ${speed == 1 ? 'selected' : ''} value="${speed}">${`${speed == 1 ? 'Normal' : speed}`}</option>`;
                     });
