@@ -102,6 +102,8 @@ body {
     bottom: 0;
     transition: 0.5s all ease;
     background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.8));
+    opacity: 0;
+    pointer-events: none;
 
     .duration-wrapper {
       position: relative;
@@ -111,11 +113,6 @@ body {
     &:is(.showed-up) {
       opacity: 1;
       pointer-events: all;
-    }
-
-    &:not(.showed-up) {
-      opacity: 0;
-      pointer-events: none;
     }
 
     &__actions {
@@ -208,7 +205,7 @@ body {
   input[type="range"] {
     color: var(--primaryColor);
     --thumb-height: 1em;
-    --track-height: 0.20em;
+    --track-height: 0.26em;
     --track-color: hsla(0, 0%, 80%, 0.5);
     --brightness-hover: 180%;
     --brightness-down: 80%;
@@ -495,6 +492,7 @@ body {
     top: 50%;
     transform: scale(1.05) translate(-50%, -50%);
     height: 100%;
+    pointer-events: none;
   }
 
   .loader {
@@ -502,52 +500,13 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    opacity: 1;
+    opacity: 0;
     transition: 200ms all ease;
+    pointer-events: none;
 
-    &:is(.hide) {
-      opacity: 0;
-      pointer-events: none;
+    &:is(.show) {
+      opacity: 1;
     }
-
-    .lds-ring {
-      display: inline-block;
-      position: relative;
-      width: 80px;
-      height: 80px;
-
-      div {
-        box-sizing: border-box;
-        display: block;
-        position: absolute;
-        width: 64px;
-        height: 64px;
-        margin: 8px;
-        border: 8px solid #fff;
-        border-radius: 50%;
-        animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-        border-color: #fff transparent transparent transparent;
-
-        &:nth-child(1) {
-          animation-delay: -0.45s;
-        }
-        &:nth-child(2) {
-          animation-delay: -0.3s;
-        }
-        &:nth-child(3) {
-          animation-delay: -0.15s;
-        }
-      }
-    }
-
-    @keyframes lds-ring {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }    
   }
 
   .buffered-progress {
@@ -557,6 +516,15 @@ body {
     transform: translateY(-50%);
     height: 0.20em;
     width: 0;
+  }
+
+  :where(.actions-wrapper-mobile, #duration-indicator-mobile) {
+    display: none;
+  }
+
+  button:is(.settings-btn-mobile, .fullscreen-btn-mobile, .volume-btn-mobile) {
+    display: none;
+    font-size: 1.1rem;
   }
 
   @import './partials/utils';

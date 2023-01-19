@@ -21,7 +21,6 @@ export class Videoary {
         this._idleState = false;
         this._idleDuration = 3500;
         this._playbackSpeeds = [0.25, 0.5, 0.7, 1, 1.25, 1.5, 1.75, 2];
-        this._touchTime = 0;
         this.options = Object.assign(this, options);
         this.subtitles = options.subtitles;
         this.video = options.video;
@@ -35,6 +34,7 @@ export class Videoary {
         this._durationSlider = this._container.querySelector('input:is(#duration)');
         this._volumeSlider = this._container.querySelector('input:is(#volume)');
         this._durationIndicator = this._container.querySelector('#duration-indicator');
+        this._durationIndicatorMobile = this._container.querySelector('#duration-indicator-mobile');
         this._videoEl = this._container.querySelector('video');
         this._bottomPanel = this._container.querySelector('.videoary__bottom-panel');
         this._toast = this._container.querySelector('.toast');
@@ -50,16 +50,22 @@ export class Videoary {
             captions: this._container.querySelector('#closed-captions-button'),
             picInPic: this._container.querySelector('#pic-in-pic-button'),
             theater: this._container.querySelector('#theater-button'),
-            settings: this._container.querySelector('#settings-button')
+            settings: this._container.querySelector('#settings-button'),
+            mobile: {
+                play: this._container.querySelector('.play-btn-mobile'),
+                fullscreen: this._container.querySelector('.fullscreen-btn-mobile'),
+                volume: this._container.querySelector('.volume-btn-mobile')
+            }
         };
         this._playIcon = (_a = this._buttons.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
         this._videoCaptions = this._container.querySelectorAll('track');
         this._ambientCanvas = this._container.querySelector('canvas');
         this._ctx = this._ambientCanvas.getContext('2d');
         this._loader = this._container.querySelector('.loader');
+        this._actionsWrapperMobile = this._container.querySelector('.actions-wrapper-mobile');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         return __awaiter(this, void 0, void 0, function* () {
             document.documentElement.style.setProperty('--primaryColor', this.accentColor);
             if (!this.subtitles) {
@@ -69,22 +75,42 @@ export class Videoary {
             }
             yield this.loadVideo((_b = this.video) === null || _b === void 0 ? void 0 : _b.source);
             this.showLoader(false);
-            this.screenRespond();
-            window.addEventListener('resize', this.screenRespond.bind(this));
             this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
-            this._bottomPanel.classList.add('showed-up');
+            this.showBottomPanel();
             this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this));
             this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'));
             this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this));
             this._videoEl.addEventListener('play', this.runAmbient.bind(this));
             this._container.addEventListener('contextmenu', (event) => event.preventDefault());
             this._container.addEventListener('fullscreenchange', this.fullscreenChange.bind(this));
-            this._container.addEventListener('mousemove', this.idlingWatch.bind(this));
-            this._container.addEventListener('mouseout', this.hideBottomPanel.bind(this));
-            this._videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this));
-            this._bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this));
+            this._videoEl.addEventListener('touchstart', () => {
+                this._actionsWrapperMobile.classList.toggle('hide');
+                if (this._actionsWrapperMobile.classList.contains('hide')) {
+                    this._bottomPanel.classList.remove('showed-up');
+                    this._captionsWrapper.classList.add('get-down');
+                }
+                else {
+                    this._bottomPanel.classList.add('showed-up');
+                    this._captionsWrapper.classList.remove('get-down');
+                }
+            });
+            document.addEventListener('touchstart', (event) => {
+                const targetElement = event.target;
+                if (!targetElement.closest('.videoary')) {
+                    this._actionsWrapperMobile.classList.add('hide');
+                    this._bottomPanel.classList.remove('showed-up');
+                    this._captionsWrapper.classList.add('get-down');
+                }
+            });
+            if (window.matchMedia('screen and (min-width: 768px)').matches) {
+                this._videoEl.addEventListener('click', this.playVideo.bind(this));
+                this._container.addEventListener('mousemove', this.idlingWatch.bind(this));
+                this._container.addEventListener('mouseout', this.hideBottomPanel.bind(this));
+                this._videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this));
+                this._bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this));
+                document.addEventListener('click', this.hideSettingsPanelOutside.bind(this));
+            }
             document.addEventListener('keydown', this.keyEvents.bind(this));
-            document.addEventListener('click', this.hideSettingsPanelOutside.bind(this));
             this._durationSlider.addEventListener('input', this.seekingVideo.bind(this));
             this._durationSlider.addEventListener('change', this.seekingVideoPaused.bind(this));
             this._volumeSlider.addEventListener('click', (event) => event.stopPropagation());
@@ -117,13 +143,13 @@ export class Videoary {
                 indicatorEl.innerHTML = `${`${speed == 1 ? 'Normal' : speed} <i class="far fa-fw fa-chevron-right"></i>`}`;
             });
             // For Subtitle Changer
-            const captionsButtons = this.settingsPanelButtons(0);
+            const captionsButtons = this.settingsPanelButtons(1);
             this.settingsAction(captionsButtons, this._videoCaption, 'data-lang', (caption) => {
                 var _a;
                 this._videoCaption = caption;
                 this._selectedCaption = this._captionsArray.find(caption => caption.language == this._videoCaption);
                 this.runCaptions(this._selectedCaption);
-                const indicatorEl = this._settingsButtons[0].querySelector('span:nth-child(2)');
+                const indicatorEl = this._settingsButtons[1].querySelector('span:nth-child(2)');
                 indicatorEl.innerHTML = `${`${(_a = this._selectedCaption) === null || _a === void 0 ? void 0 : _a.label} <i class="far fa-fw fa-chevron-right"></i>`}`;
             });
             (_c = this._buttons.play) === null || _c === void 0 ? void 0 : _c.addEventListener('click', this.playVideo.bind(this));
@@ -133,31 +159,20 @@ export class Videoary {
             (_g = this._buttons.volume) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.muteVolume.bind(this));
             (_h = this._buttons.theater) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.theaterMode.bind(this));
             (_j = this._buttons.settings) === null || _j === void 0 ? void 0 : _j.addEventListener('click', this.openSettings.bind(this));
+            (_k = this._buttons.mobile.play) === null || _k === void 0 ? void 0 : _k.addEventListener('click', this.playVideo.bind(this));
+            (_l = this._buttons.mobile.fullscreen) === null || _l === void 0 ? void 0 : _l.addEventListener('click', this.openFullScreen.bind(this));
+            (_m = this._buttons.mobile.volume) === null || _m === void 0 ? void 0 : _m.addEventListener('click', () => {
+                var _a;
+                this.muteVolume();
+                const icon = (_a = this._buttons.mobile.volume) === null || _a === void 0 ? void 0 : _a.querySelector('i');
+                if (this._videoEl.muted) {
+                    icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-volume', 'fa-volume-mute');
+                }
+                else {
+                    icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-volume-mute', 'fa-volume');
+                }
+            });
         });
-    }
-    screenRespond() {
-        if (window.matchMedia('screen and (min-width: 768px)').matches) {
-            this._videoEl.addEventListener('click', this.playVideo.bind(this));
-        }
-        else {
-            this._videoEl.addEventListener('click', this.doubleClickPlay.bind(this));
-        }
-    }
-    doubleClickPlay(event) {
-        event.preventDefault();
-        if (this._touchTime == 0) {
-            this._touchTime = new Date().getTime();
-        }
-        else {
-            if (((new Date().getTime()) - this._touchTime) < 800) {
-                this.playVideo();
-                this._touchTime = 0;
-            }
-            else {
-                this.idlingWatch(event);
-                this._touchTime = new Date().getTime();
-            }
-        }
     }
     showLoader(status) {
         status ? this._loader.classList.remove('hide') : this._loader.classList.add('hide');
@@ -224,12 +239,15 @@ export class Videoary {
             this.hideBottomPanel();
     }
     fullscreenChange() {
-        var _a;
+        var _a, _b;
         const icon = (_a = this._buttons.fullscreen) === null || _a === void 0 ? void 0 : _a.querySelector('i');
+        const mobileIcon = (_b = this._buttons.mobile.fullscreen) === null || _b === void 0 ? void 0 : _b.querySelector('i');
         if (document.fullscreenElement) {
+            mobileIcon.classList.replace('fa-expand', 'fa-compress');
             icon.classList.replace('fa-expand', 'fa-compress');
         }
         else {
+            mobileIcon.classList.replace('fa-compress', 'fa-expand');
             icon.classList.replace('fa-compress', 'fa-expand');
         }
     }
@@ -253,11 +271,6 @@ export class Videoary {
         this.changeMuteIcon();
     }
     keyEvents(event) {
-        this.showBottomPanel();
-        setTimeout(() => {
-            this.hideBottomPanel();
-            this._container.style.cursor = "none";
-        }, this._idleDuration);
         if (event.key == "ArrowRight") {
             this._videoEl.currentTime += 5;
         }
@@ -286,6 +299,7 @@ export class Videoary {
     }
     loadedVideo() {
         this._durationIndicator.textContent = `0:00 / ${formatDuration(this._videoEl.duration)}`;
+        this._durationIndicatorMobile.textContent = `0:00 / ${formatDuration(this._videoEl.duration)}`;
         this._durationSlider.max = String(this._videoEl.duration);
         this._volumeSlider.value = String(this._videoEl.volume);
     }
@@ -298,6 +312,7 @@ export class Videoary {
             bufferedProgressEl.style.width = `${String(width)}%`;
         }
         this._durationIndicator.textContent = `${formatDuration(time)} / ${formatDuration(duration)}`;
+        this._durationIndicatorMobile.textContent = `${formatDuration(time)} / ${formatDuration(duration)}`;
         this._durationSlider.value = time.toString();
     }
     settingsPanelButtons(panelIndex) {
@@ -390,13 +405,17 @@ export class Videoary {
         loop();
     }
     playVideo() {
+        var _a;
         this._posterEl.classList.add('hide');
+        const mobileIcon = (_a = this._buttons.mobile.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
         if (this._videoEl.paused) {
+            mobileIcon.classList.replace('fa-play', 'fa-pause');
             this._playIcon.classList.replace('fa-play', 'fa-pause');
             this._videoEl.play();
             this._isPlayed = true;
         }
         else {
+            mobileIcon.classList.replace('fa-pause', 'fa-play');
             this._playIcon.classList.replace('fa-pause', 'fa-play');
             this._videoEl.pause();
             this.showBottomPanel();
@@ -406,12 +425,16 @@ export class Videoary {
     idlingWatch(event) {
         const elementTarget = event.target;
         clearTimeout(this._idleTimer);
-        if (this._idleState)
+        if (this._idleState) {
+            this._actionsWrapperMobile.classList.remove('hide');
             this.showBottomPanel();
+        }
         this._idleState = false;
         this._idleTimer = setTimeout(() => {
-            if (!elementTarget.closest('.videoary__bottom-panel')) {
-                this.hideBottomPanel();
+            if (!elementTarget.closest('.videoary__bottom-panel') || !elementTarget.closest('.play-btn-mobile')) {
+                if (!this._videoEl.paused) {
+                    this.hideBottomPanel();
+                }
                 this._idleState = true;
                 this._container.style.cursor = "none";
             }
@@ -427,6 +450,7 @@ export class Videoary {
         }
     }
     showBottomPanel() {
+        this._actionsWrapperMobile.classList.remove('hide');
         this._container.style.cursor = "default";
         this._bottomPanel.classList.add('showed-up');
         this._captionsWrapper.classList.remove('get-down');

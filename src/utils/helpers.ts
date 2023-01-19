@@ -19,11 +19,25 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     container.innerHTML = `
     <div class="container videoary" id="videoary">
     <div class="loader">
-        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+        <i class="fas fa-fw fa-spin fa-spinner-third"></i>
     </div>
     <div class="toast"></div>
     <img class="poster" ${video?.poster ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
+    <div class="actions-wrapper-mobile">
+        <button type="button" class="settings-btn-mobile"><i class="fas fa-fw fa-gear"></i></button>
+        <ul>
+            <li class="${!video?.next ? "hidden" : ""}">
+                <button type="button"><i class="fas fa-fw fa-step-backward"></i></button>
+            </li>
+            <li>
+                <button type="button" class="play-btn-mobile"><i class="fas fa-fw fa-play"></i></button>
+            </li>
+            <li class="${!video?.prev ? "hidden" : ""}">
+                <button type="button"><i class="fas fa-fw fa-step-forward"></i></button>
+            </li>
+        </ul>
+    </div>
     <video controlslist="nodownload" crossorigin="anonymous">
         ${subtitles?.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`
@@ -31,6 +45,11 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     </video>
     <div class="captions-wrapper"></div>
     <div class="videoary__bottom-panel">
+        <div class="mobile-wrapper">
+            <p id="duration-indicator-mobile">0:00</p>
+            <button type="button" class="volume-btn-mobile"><i class="fas fa-fw fa-volume"></i></button>
+            <button type="button" class="fullscreen-btn-mobile"><i class="fas fa-fw fa-expand"></i></button>
+        </div>
         <div class="duration-wrapper">
             <div class="buffered-progress"></div>
             <input type="range" name="duration" id="duration" value="0" min="0" step=".001">
@@ -41,7 +60,7 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
                     <button id="play-button"><i class="fas fa-fw fa-play"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Play (p)</div>
                 </li>
-                <li>
+                <li class="${!video?.next ? "hidden" : ""}">
                     <button id="next-button"><i class="fas fa-fw fa-forward-step"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Next (n)</div>
                 </li>

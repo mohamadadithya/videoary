@@ -1,6 +1,92 @@
 @media (max-width: 470px) {
+    .actions-wrapper {
+        display: none;
+    }
+
+    button {
+        &:is(.settings-btn-mobile) {
+            display: block;
+            position: absolute;
+            top: 0.8em;
+            right: 0.8em;
+        }
+    }
+
+    .videoary__bottom-panel {
+        padding: 0 0.8em;
+
+        .mobile-wrapper {
+            position: relative;
+
+            #duration-indicator-mobile {
+                display: block;
+                color: white;
+                position: absolute;
+                bottom: 0;
+                font-size: .75rem;
+            }
+
+            button:is(.fullscreen-btn-mobile) {
+                display: block;
+                position: absolute;
+                bottom: 0;
+                right: 0;
+            }
+            
+            button:is(.volume-btn-mobile) {
+                display: block;
+                position: absolute;
+                bottom: 0;
+                right: 35px;
+            }
+        }
+    }
+
+    .actions-wrapper-mobile {
+        display: block;
+        opacity: 1;
+        pointer-events: all;
+        transition: 0.5s all ease;
+        z-index: 9;
+
+        &:is(.hide) {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        & > ul {
+            li {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+
+                &:first-child {
+                    left: 2.5em;
+                }
+
+                &:nth-child(2) {
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
+
+                &:last-child {
+                    right: 2.5em;
+                }
+            }
+
+            & button {
+                font-size: 2rem;
+            }
+        }
+    }
+
     &>.captions-wrapper {
+        bottom: 30px;
         font-size: 0.8rem;
+
+        &:is(.get-down) {
+            bottom: 10px;
+        }
     }
 
     &__bottom-panel {

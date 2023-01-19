@@ -18,11 +18,25 @@ const render = (container, video, subtitles, playbackSpeed, playbackSpeeds, vide
     container.innerHTML = `
     <div class="container videoary" id="videoary">
     <div class="loader">
-        <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+        <i class="fas fa-fw fa-spin fa-spinner-third"></i>
     </div>
     <div class="toast"></div>
     <img class="poster" ${(video === null || video === void 0 ? void 0 : video.poster) ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
+    <div class="actions-wrapper-mobile">
+        <button type="button" class="settings-btn-mobile"><i class="fas fa-fw fa-gear"></i></button>
+        <ul>
+            <li class="${!(video === null || video === void 0 ? void 0 : video.next) ? "hidden" : ""}">
+                <button type="button"><i class="fas fa-fw fa-step-backward"></i></button>
+            </li>
+            <li>
+                <button type="button" class="play-btn-mobile"><i class="fas fa-fw fa-play"></i></button>
+            </li>
+            <li class="${!(video === null || video === void 0 ? void 0 : video.prev) ? "hidden" : ""}">
+                <button type="button"><i class="fas fa-fw fa-step-forward"></i></button>
+            </li>
+        </ul>
+    </div>
     <video controlslist="nodownload" crossorigin="anonymous">
         ${subtitles === null || subtitles === void 0 ? void 0 : subtitles.map((caption) => {
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`;
@@ -30,6 +44,11 @@ const render = (container, video, subtitles, playbackSpeed, playbackSpeeds, vide
     </video>
     <div class="captions-wrapper"></div>
     <div class="videoary__bottom-panel">
+        <div class="mobile-wrapper">
+            <p id="duration-indicator-mobile">0:00</p>
+            <button type="button" class="volume-btn-mobile"><i class="fas fa-fw fa-volume"></i></button>
+            <button type="button" class="fullscreen-btn-mobile"><i class="fas fa-fw fa-expand"></i></button>
+        </div>
         <div class="duration-wrapper">
             <div class="buffered-progress"></div>
             <input type="range" name="duration" id="duration" value="0" min="0" step=".001">
@@ -40,7 +59,7 @@ const render = (container, video, subtitles, playbackSpeed, playbackSpeeds, vide
                     <button id="play-button"><i class="fas fa-fw fa-play"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Play (p)</div>
                 </li>
-                <li>
+                <li class="${!(video === null || video === void 0 ? void 0 : video.next) ? "hidden" : ""}">
                     <button id="next-button"><i class="fas fa-fw fa-forward-step"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Next (n)</div>
                 </li>
