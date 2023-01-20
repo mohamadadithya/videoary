@@ -78,7 +78,8 @@ export class Videoary {
                 play: this._container.querySelector('.play-btn-mobile'),
                 fullscreen: this._container.querySelector('.fullscreen-btn-mobile'),
                 volume: this._container.querySelector('.volume-btn-mobile'),
-                settings: this._container.querySelector('.settings-btn-mobile')
+                settings: this._container.querySelector('.settings-btn-mobile'),
+                captions: this._container.querySelector('.captions-btn-mobile')
             }
         }
         this._playIcon = this._buttons.play?.querySelector('i') as HTMLElement
@@ -214,6 +215,7 @@ export class Videoary {
                 icon?.classList.replace('fa-volume-mute', 'fa-volume')
             }
         })
+        this._buttons.mobile.captions?.addEventListener('click', this.showCaptions.bind(this))
         this._buttons.mobile.settings?.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'))
         const settingsPanelMobileCloseButton = this._settingsPanelMobile?.querySelector('.close-btn')
         settingsPanelMobileCloseButton?.addEventListener('click', () => this._settingsPanelMobile.classList.remove('showed'))
@@ -462,12 +464,15 @@ export class Videoary {
     private showCaptions() {
         this._captionsWrapper.classList.toggle('active')
         const icon = this._buttons.captions?.querySelector('i')
+        const mobileIcon = this._buttons.mobile.captions?.querySelector('i')
         if(this._captionsWrapper.classList.contains('active')) {
             this.showToast('Closed Captions is On')
             icon?.classList.replace('far', 'fas')
+            mobileIcon?.classList.replace('far', 'fas')
         } else {
             this.showToast('Closed Captions is Off')
             icon?.classList.replace('fas', 'far')
+            mobileIcon?.classList.replace('fas', 'far')
         }
     }
 

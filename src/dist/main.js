@@ -55,7 +55,8 @@ export class Videoary {
                 play: this._container.querySelector('.play-btn-mobile'),
                 fullscreen: this._container.querySelector('.fullscreen-btn-mobile'),
                 volume: this._container.querySelector('.volume-btn-mobile'),
-                settings: this._container.querySelector('.settings-btn-mobile')
+                settings: this._container.querySelector('.settings-btn-mobile'),
+                captions: this._container.querySelector('.captions-btn-mobile')
             }
         };
         this._playIcon = (_a = this._buttons.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
@@ -68,7 +69,7 @@ export class Videoary {
         this._settingsMenuPanelsMobile = this._settingsPanelMobile.querySelectorAll('.list li');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
         return __awaiter(this, void 0, void 0, function* () {
             document.documentElement.style.setProperty('--primaryColor', this.accentColor);
             if (!this.subtitles) {
@@ -183,8 +184,9 @@ export class Videoary {
                     icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-volume-mute', 'fa-volume');
                 }
             });
-            (_o = this._buttons.mobile.settings) === null || _o === void 0 ? void 0 : _o.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'));
-            const settingsPanelMobileCloseButton = (_p = this._settingsPanelMobile) === null || _p === void 0 ? void 0 : _p.querySelector('.close-btn');
+            (_o = this._buttons.mobile.captions) === null || _o === void 0 ? void 0 : _o.addEventListener('click', this.showCaptions.bind(this));
+            (_p = this._buttons.mobile.settings) === null || _p === void 0 ? void 0 : _p.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'));
+            const settingsPanelMobileCloseButton = (_q = this._settingsPanelMobile) === null || _q === void 0 ? void 0 : _q.querySelector('.close-btn');
             settingsPanelMobileCloseButton === null || settingsPanelMobileCloseButton === void 0 ? void 0 : settingsPanelMobileCloseButton.addEventListener('click', () => this._settingsPanelMobile.classList.remove('showed'));
         });
     }
@@ -418,16 +420,19 @@ export class Videoary {
         this._toast.textContent = text;
     }
     showCaptions() {
-        var _a;
+        var _a, _b;
         this._captionsWrapper.classList.toggle('active');
         const icon = (_a = this._buttons.captions) === null || _a === void 0 ? void 0 : _a.querySelector('i');
+        const mobileIcon = (_b = this._buttons.mobile.captions) === null || _b === void 0 ? void 0 : _b.querySelector('i');
         if (this._captionsWrapper.classList.contains('active')) {
             this.showToast('Closed Captions is On');
             icon === null || icon === void 0 ? void 0 : icon.classList.replace('far', 'fas');
+            mobileIcon === null || mobileIcon === void 0 ? void 0 : mobileIcon.classList.replace('far', 'fas');
         }
         else {
             this.showToast('Closed Captions is Off');
             icon === null || icon === void 0 ? void 0 : icon.classList.replace('fas', 'far');
+            mobileIcon === null || mobileIcon === void 0 ? void 0 : mobileIcon.classList.replace('fas', 'far');
         }
     }
     runAmbient() {

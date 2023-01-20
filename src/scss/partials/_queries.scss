@@ -3,12 +3,17 @@
         display: none;
     }
 
-    button {
+    button:is(.head-btn-mobile) {
+        top: 0.8em;
+        display: block;
+        position: absolute;
+
         &:is(.settings-btn-mobile) {
-            display: block;
-            position: absolute;
-            top: 0.8em;
             right: 0.8em;
+        }
+
+        &:is(.captions-btn-mobile) {
+            right: calc(1.4em * 2);
         }
     }
 
@@ -26,18 +31,18 @@
                 font-size: .75rem;
             }
 
-            button:is(.fullscreen-btn-mobile) {
+            button {
                 display: block;
                 position: absolute;
                 bottom: 0;
-                right: 0;
-            }
-            
-            button:is(.volume-btn-mobile) {
-                display: block;
-                position: absolute;
-                bottom: 0;
-                right: 35px;
+
+                &:is(.fullscreen-btn-mobile) {
+                    right: 0;
+                }
+
+                &:is(.volume-btn-mobile) {
+                    right: 35px;
+                }
             }
         }
     }
@@ -82,7 +87,7 @@
 
     &>.captions-wrapper {
         bottom: 30px;
-        font-size: 0.8rem;
+        font-size: 0.7rem;
 
         &:is(.get-down) {
             bottom: 10px;
@@ -167,9 +172,9 @@
             }
 
             &-child {
-                padding: 1em 1em 2em 1em;
+                padding: 1em;
 
-                .list {    
+                .list {
                     li:not(:last-child) {
                         margin-bottom: .85em;
                     }

@@ -25,7 +25,8 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
     <img class="poster" ${video?.poster ? `src="/posters/${video.poster}"` : ''} />
     <canvas class="ambient-background"></canvas>
     <div class="actions-wrapper-mobile">
-        <button type="button" class="settings-btn-mobile"><i class="fas fa-fw fa-gear"></i></button>
+        <button type="button" class="settings-btn-mobile head-btn-mobile"><i class="fas fa-fw fa-gear"></i></button>
+        <button type="button" class="captions-btn-mobile head-btn-mobile"><i class="far fa-fw fa-closed-captioning"></i></button>
         <ul>
             <li class="${!video?.next ? "hidden" : ""}">
                 <button type="button"><i class="fas fa-fw fa-step-backward"></i></button>
@@ -107,15 +108,15 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
                     <div role="tooltip" aria-disabled="false" class="tooltip">Picture in Picture (i)</div>
                 </li>
                 <li>
-                    <button id="fullscreen-button"><i class="far fa-fw fa-expand"></i></button>
-                    <div role="tooltip" aria-disabled="false" class="tooltip">Fullscreen (f)</div>
-                </li>
-                <li>
                 <button id="settings-button"><i class="fas fa-fw fa-gear"></i></button>
                 </li>
                 <li>
                     <button id="theater-button"><i class="far fa-fw fa-rectangle-wide"></i></button>
                     <div role="tooltip" aria-disabled="false" class="tooltip">Theater Mode (t)</div>
+                </li>
+                <li>
+                    <button id="fullscreen-button"><i class="far fa-fw fa-expand"></i></button>
+                    <div role="tooltip" aria-disabled="false" class="tooltip">Fullscreen (f)</div>
                 </li>
             </ul>
         </div>
