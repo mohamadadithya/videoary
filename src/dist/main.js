@@ -82,7 +82,12 @@ export class Videoary {
             this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
             this.showBottomPanel();
             this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this));
-            this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'));
+            this._videoEl.addEventListener('ended', () => {
+                var _a;
+                this._playIcon.classList.replace('fa-pause', 'fa-play');
+                const mobileIcon = (_a = this._buttons.mobile.play) === null || _a === void 0 ? void 0 : _a.querySelector('i');
+                mobileIcon === null || mobileIcon === void 0 ? void 0 : mobileIcon.classList.replace('fa-pause', 'fa-play');
+            });
             this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this));
             this._videoEl.addEventListener('play', this.runAmbient.bind(this));
             this._container.addEventListener('contextmenu', (event) => event.preventDefault());

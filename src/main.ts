@@ -107,7 +107,11 @@ export class Videoary {
         this.showBottomPanel()
 
         this._videoEl.addEventListener('loadeddata', this.loadedVideo.bind(this))
-        this._videoEl.addEventListener('ended', () => this._playIcon.classList.replace('fa-pause', 'fa-play'))
+        this._videoEl.addEventListener('ended', () => {
+            this._playIcon.classList.replace('fa-pause', 'fa-play')
+            const mobileIcon = this._buttons.mobile.play?.querySelector('i')
+            mobileIcon?.classList.replace('fa-pause', 'fa-play')
+        })
         this._videoEl.addEventListener('timeupdate', this.runDuration.bind(this))
         this._videoEl.addEventListener('play', this.runAmbient.bind(this))
 
