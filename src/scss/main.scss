@@ -29,7 +29,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  overflow-x: hidden;
+  overflow: hidden;
 
   ul {
     list-style: none;
@@ -515,7 +515,7 @@ body {
     position: absolute;
     top: 45%;
     transform: translateY(-50%);
-    height: 0.20em;
+    height: 0.26em;
     width: 0;
   }
 
