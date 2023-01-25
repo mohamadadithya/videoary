@@ -16,6 +16,7 @@ public/captions/*
 public/posters/*.png
 
 # Editor directories and files
+.turbo
 .vscode/*
 !.vscode/extensions.json
 .idea

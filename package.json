@@ -10,6 +10,7 @@
     "dev": "vite",
     "dev:compile": "tsc ./src/script.ts --target es6 --outdir ./src/dist --watch",
     "build": "vite build",
+    "lint": "tsc",
     "preview": "vite preview"
   },
   "devDependencies": {
