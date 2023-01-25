@@ -13,13 +13,13 @@ const videoary = new Videoary({
     containerArea: container,
     video: {
         src: "example", // Hls source
-        poster: null // Poster or thumbnail extension must be .png,
-        next: null, // Optional to play next video
-        prev: null // Optional to play prev video
+        poster: null, // Poster or thumbnail extension must be .png,
+        next: null, // Optional page link to play next video
+        prev: null // Optional page link to play prev video
     },
     subtitles: [
         {
-            source: "example.vtt" // Subtitle source
+            source: "example.vtt", // Subtitle source
             short: "en",
             long: "English"
         }
