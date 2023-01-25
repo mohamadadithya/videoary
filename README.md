@@ -6,14 +6,20 @@ To use Videoary
 ```js
 import { Videoary } from "videoary"
 
+const container = document.querySelector('#app') // Root area to append
+
 const videoary = new Videoary({
+    accentColor: "red",
     containerArea: container,
     video: {
-        src: "example", // The extension must be .mp4
-        poster: null // Poster or thumbnail extension must be .png
+        src: "example", // Hls source
+        poster: null // Poster or thumbnail extension must be .png,
+        next: null, // Optional to play next video
+        prev: null // Optional to play prev video
     },
     subtitles: [
         {
+            source: "example.vtt" // Subtitle source
             short: "en",
             long: "English"
         }
