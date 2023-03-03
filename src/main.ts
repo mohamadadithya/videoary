@@ -1,4 +1,4 @@
-import '../scss/main.scss'
+import './scss/main.scss'
 import { formatDuration, render } from './utils/helpers'
 import { Video, Subtitle } from './utils/types'
 import Hls from 'hls.js'

@@ -4,6 +4,7 @@ import dts from 'vite-plugin-dts';
 
 /** @type {import('vite').UserConfig} */
 export default defineConfig({
+    plugins: [dts({ insertTypesEntry: true })],
     build: {
         target: 'es2015',
         rollupOptions: {

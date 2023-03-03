@@ -13,12 +13,12 @@ specifiers:
 dependencies:
   esbuild: 0.16.14
   hls.js: 1.3.0
-  typescript: 4.9.4
 
 devDependencies:
   '@types/node': 18.14.4
   autoprefixer: 10.4.13
   sass: 1.57.1
+  typescript: 4.9.4
   vite: 3.1.3_sass@1.57.1
   vite-plugin-dts: 2.0.2_gbfhhhzfbktt5kxfkhkfsz5pa4
 
@@ -1161,7 +1161,7 @@ packages:
     resolution: {integrity: sha512-Uz+dTXYzxXXbsFpM86Wh3dKCxrQqUcVMxwU54orwlJjOpO3ao8L7j5lH+dWfTwgCwIuM9GQ2kvVotzYJMXTBZg==}
     engines: {node: '>=4.2.0'}
     hasBin: true
-    dev: false
+    dev: true
 
   /universalify/0.1.2:
     resolution: {integrity: sha512-rBJeI5CXAlmy1pV+617WB9J63U6XcazHHF2f2dbJix4XzpUF0RS3Zbj0FGIOCAva5P/d/GBOYaACQ1w+0azUkg==}
