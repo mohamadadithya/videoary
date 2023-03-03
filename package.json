@@ -1,9 +1,11 @@
 {
   "name": "videoary-js",
-  "private": true,
-  "version": "0.0.0",
+  "private": false,
+  "version": "0.0.1",
   "type": "module",
-  "browserslist": ["last 2 versions"],
+  "browserslist": [
+    "last 2 versions"
+  ],
   "files": [
     "dist/*.css",
     "dist/*.js",

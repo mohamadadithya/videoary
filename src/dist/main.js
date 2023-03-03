@@ -7,7 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import './scss/main.scss';
+import '../scss/main.scss';
 import { formatDuration, render } from './utils/helpers';
 import Hls from 'hls.js';
 export class Videoary {
