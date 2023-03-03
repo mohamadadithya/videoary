@@ -68,6 +68,7 @@ const render = (container: HTMLAreaElement, video: Video | undefined, subtitles:
         return `<track label="${caption.long}" kind="subtitles" srclang="${caption.short}" src="${caption.source}" default />`
         }).join('')}
     </video>
+    <div class="overlay"></div>
     <div class="captions-wrapper"></div>
     <div class="videoary__bottom-panel">
         <div class="mobile-wrapper">

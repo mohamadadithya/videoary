@@ -17,7 +17,7 @@ export class Videoary {
         this._isPlayed = false;
         this._currentVolume = 1;
         this._playbackSpeed = 1;
-        this._idleTimer = 0;
+        this._idleTimer = null;
         this._idleState = false;
         this._idleDuration = 3500;
         this._playbackSpeeds = [0.25, 0.5, 0.7, 1, 1.25, 1.5, 1.75, 2];
@@ -67,6 +67,7 @@ export class Videoary {
         this._actionsWrapperMobile = this._container.querySelector('.actions-wrapper-mobile');
         this._settingsPanelMobile = this._container.querySelector('.settings-panel-mobile');
         this._settingsMenuPanelsMobile = this._settingsPanelMobile.querySelectorAll('.list li');
+        this._overlay = this._container.querySelector('.overlay');
     }
     init() {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
@@ -99,10 +100,12 @@ export class Videoary {
                 if (this._actionsWrapperMobile.classList.contains('hide')) {
                     this._bottomPanel.classList.remove('showed-up');
                     this._captionsWrapper.classList.add('get-down');
+                    this._overlay.classList.add('invisible');
                 }
                 else {
                     this._bottomPanel.classList.add('showed-up');
                     this._captionsWrapper.classList.remove('get-down');
+                    this._overlay.classList.remove('invisible');
                 }
             });
             document.addEventListener('touchstart', (event) => {
@@ -112,6 +115,7 @@ export class Videoary {
                         this._actionsWrapperMobile.classList.add('hide');
                         this._bottomPanel.classList.remove('showed-up');
                         this._captionsWrapper.classList.add('get-down');
+                        this._overlay.classList.add('invisible');
                     }
                 }
             });
@@ -124,6 +128,7 @@ export class Videoary {
                 this._videoEl.addEventListener('click', this.playVideo.bind(this));
                 this._container.addEventListener('mousemove', this.idlingWatch.bind(this));
                 this._container.addEventListener('mouseout', this.hideBottomPanel.bind(this));
+                this._overlay.addEventListener('mouseover', this.showBottomPanel.bind(this));
                 this._videoEl.addEventListener('mouseover', this.showBottomPanel.bind(this));
                 this._bottomPanel.addEventListener('mouseover', this.showBottomPanel.bind(this));
                 document.addEventListener('click', this.hideSettingsPanelOutside.bind(this));
@@ -472,7 +477,7 @@ export class Videoary {
     }
     idlingWatch(event) {
         const elementTarget = event.target;
-        clearTimeout(this._idleTimer);
+        clearTimeout(this._idleTimer || 0);
         if (this._idleState) {
             this._actionsWrapperMobile.classList.remove('hide');
             this.showBottomPanel();
@@ -491,10 +496,12 @@ export class Videoary {
     hideBottomPanel() {
         if (this._videoEl.paused || this._settingsMenu.classList.contains('active')) {
             this.showBottomPanel();
+            this._overlay.classList.remove('invisible');
         }
         else {
             this._captionsWrapper.classList.add('get-down');
             this._bottomPanel.classList.remove('showed-up');
+            this._overlay.classList.add('invisible');
         }
     }
     showBottomPanel() {
@@ -502,6 +509,7 @@ export class Videoary {
         this._container.style.cursor = "default";
         this._bottomPanel.classList.add('showed-up');
         this._captionsWrapper.classList.remove('get-down');
+        this._overlay.classList.remove('invisible');
     }
     openPIP() {
         if (document.pictureInPictureElement) {
