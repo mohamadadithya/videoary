@@ -98,6 +98,7 @@ export class Videoary {
             this._settingsButtons[1].classList.add('hidden')
             this._settingsMenuPanels[1].classList.add('hidden')
             this._buttons.captions?.classList.add('hidden')
+            this._buttons.mobile.captions?.classList.add('hidden')
         }
 
         await this.loadVideo(this.video?.source!)
@@ -248,6 +249,8 @@ export class Videoary {
                 const captionsSelect = this._settingsMenuPanelsMobile[0].querySelector('select') as HTMLSelectElement
                 const mobileQualitySelect = this._settingsMenuPanelsMobile[1].querySelector('select') as HTMLSelectElement
                 const playbackSpeedSelect = this._settingsMenuPanelsMobile[2].querySelector('select') as HTMLSelectElement
+
+                if(!this.subtitles) captionsSelect.parentElement?.classList.add('hidden')
 
                 captionsSelect.addEventListener('change', (event: Event) => {
                     const targetElement = event.target as HTMLSelectElement
