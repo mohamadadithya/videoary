@@ -4,6 +4,7 @@ export declare class Videoary {
     subtitles?: Subtitle[] | null;
     video?: Video;
     accentColor: string;
+    theatreMode?: boolean;
     options: this & Partial<Videoary>;
     private _isPlayed;
     private _currentVolume;

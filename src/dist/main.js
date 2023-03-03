@@ -7,13 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-import '../scss/main.scss';
+import './scss/main.scss';
 import { formatDuration, render } from './utils/helpers';
 import Hls from 'hls.js';
 export class Videoary {
     constructor(options) {
         var _a;
         this.accentColor = "hsl(353, 86%, 54%)";
+        this.theatreMode = true;
         this._isPlayed = false;
         this._currentVolume = 1;
         this._playbackSpeed = 1;
@@ -24,6 +25,7 @@ export class Videoary {
         this.options = Object.assign(this, options);
         this.subtitles = options.subtitles;
         this.video = options.video;
+        this.theatreMode = options.theatreMode;
         this._videoCaption = this.subtitles ? this.subtitles[0].short : null;
         this.containerArea = options.containerArea;
         render(this.containerArea, this.video, this.subtitles, this._playbackSpeed, this._playbackSpeeds, this._videoCaption);
@@ -70,7 +72,7 @@ export class Videoary {
         this._overlay = this._container.querySelector('.overlay');
     }
     init() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t;
         return __awaiter(this, void 0, void 0, function* () {
             document.documentElement.style.setProperty('--primaryColor', this.accentColor);
             if (!this.subtitles) {
@@ -79,7 +81,9 @@ export class Videoary {
                 (_a = this._buttons.captions) === null || _a === void 0 ? void 0 : _a.classList.add('hidden');
                 (_b = this._buttons.mobile.captions) === null || _b === void 0 ? void 0 : _b.classList.add('hidden');
             }
-            yield this.loadVideo((_c = this.video) === null || _c === void 0 ? void 0 : _c.source);
+            if (!this.theatreMode)
+                (_d = (_c = this._buttons.theater) === null || _c === void 0 ? void 0 : _c.parentElement) === null || _d === void 0 ? void 0 : _d.classList.add('hidden');
+            yield this.loadVideo((_e = this.video) === null || _e === void 0 ? void 0 : _e.source);
             this.showLoader(false);
             this._videoCaptions.forEach(caption => caption.track.mode = "hidden");
             this.showBottomPanel();
@@ -175,16 +179,16 @@ export class Videoary {
                 const indicatorEl = this._settingsButtons[1].querySelector('span:nth-child(2)');
                 indicatorEl.innerHTML = `${`${(_a = this._selectedCaption) === null || _a === void 0 ? void 0 : _a.label} <i class="far fa-fw fa-chevron-right"></i>`}`;
             });
-            (_d = this._buttons.play) === null || _d === void 0 ? void 0 : _d.addEventListener('click', this.playVideo.bind(this));
-            (_e = this._buttons.fullscreen) === null || _e === void 0 ? void 0 : _e.addEventListener('click', this.openFullScreen.bind(this));
-            (_f = this._buttons.picInPic) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.openPIP.bind(this));
-            (_g = this._buttons.captions) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.showCaptions.bind(this));
-            (_h = this._buttons.volume) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.muteVolume.bind(this));
-            (_j = this._buttons.theater) === null || _j === void 0 ? void 0 : _j.addEventListener('click', this.theaterMode.bind(this));
-            (_k = this._buttons.settings) === null || _k === void 0 ? void 0 : _k.addEventListener('click', this.openSettings.bind(this));
-            (_l = this._buttons.mobile.play) === null || _l === void 0 ? void 0 : _l.addEventListener('click', this.playVideo.bind(this));
-            (_m = this._buttons.mobile.fullscreen) === null || _m === void 0 ? void 0 : _m.addEventListener('click', this.openFullScreen.bind(this));
-            (_o = this._buttons.mobile.volume) === null || _o === void 0 ? void 0 : _o.addEventListener('click', () => {
+            (_f = this._buttons.play) === null || _f === void 0 ? void 0 : _f.addEventListener('click', this.playVideo.bind(this));
+            (_g = this._buttons.fullscreen) === null || _g === void 0 ? void 0 : _g.addEventListener('click', this.openFullScreen.bind(this));
+            (_h = this._buttons.picInPic) === null || _h === void 0 ? void 0 : _h.addEventListener('click', this.openPIP.bind(this));
+            (_j = this._buttons.captions) === null || _j === void 0 ? void 0 : _j.addEventListener('click', this.showCaptions.bind(this));
+            (_k = this._buttons.volume) === null || _k === void 0 ? void 0 : _k.addEventListener('click', this.muteVolume.bind(this));
+            (_l = this._buttons.theater) === null || _l === void 0 ? void 0 : _l.addEventListener('click', this.theaterMode.bind(this));
+            (_m = this._buttons.settings) === null || _m === void 0 ? void 0 : _m.addEventListener('click', this.openSettings.bind(this));
+            (_o = this._buttons.mobile.play) === null || _o === void 0 ? void 0 : _o.addEventListener('click', this.playVideo.bind(this));
+            (_p = this._buttons.mobile.fullscreen) === null || _p === void 0 ? void 0 : _p.addEventListener('click', this.openFullScreen.bind(this));
+            (_q = this._buttons.mobile.volume) === null || _q === void 0 ? void 0 : _q.addEventListener('click', () => {
                 var _a;
                 this.muteVolume();
                 const icon = (_a = this._buttons.mobile.volume) === null || _a === void 0 ? void 0 : _a.querySelector('i');
@@ -195,9 +199,9 @@ export class Videoary {
                     icon === null || icon === void 0 ? void 0 : icon.classList.replace('fa-volume-mute', 'fa-volume');
                 }
             });
-            (_p = this._buttons.mobile.captions) === null || _p === void 0 ? void 0 : _p.addEventListener('click', this.showCaptions.bind(this));
-            (_q = this._buttons.mobile.settings) === null || _q === void 0 ? void 0 : _q.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'));
-            const settingsPanelMobileCloseButton = (_r = this._settingsPanelMobile) === null || _r === void 0 ? void 0 : _r.querySelector('.close-btn');
+            (_r = this._buttons.mobile.captions) === null || _r === void 0 ? void 0 : _r.addEventListener('click', this.showCaptions.bind(this));
+            (_s = this._buttons.mobile.settings) === null || _s === void 0 ? void 0 : _s.addEventListener('click', () => this._settingsPanelMobile.classList.add('showed'));
+            const settingsPanelMobileCloseButton = (_t = this._settingsPanelMobile) === null || _t === void 0 ? void 0 : _t.querySelector('.close-btn');
             settingsPanelMobileCloseButton === null || settingsPanelMobileCloseButton === void 0 ? void 0 : settingsPanelMobileCloseButton.addEventListener('click', () => this._settingsPanelMobile.classList.remove('showed'));
         });
     }

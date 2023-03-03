@@ -1,4 +1,4 @@
-import '../scss/main.scss'
+import './scss/main.scss'
 import { formatDuration, render } from './utils/helpers'
 import { Video, Subtitle } from './utils/types'
 import Hls from 'hls.js'
@@ -8,6 +8,7 @@ export class Videoary {
     public subtitles?: Subtitle[] | null
     public video?: Video
     public accentColor: string = "hsl(353, 86%, 54%)"
+    public theatreMode?: boolean = true
     public options
     private _isPlayed: Boolean = false
     private _currentVolume: number = 1
@@ -48,6 +49,7 @@ export class Videoary {
         this.options = Object.assign(this, options)
         this.subtitles = options.subtitles
         this.video = options.video
+        this.theatreMode = options.theatreMode
         this._videoCaption = this.subtitles ? this.subtitles[0].short : null
         this.containerArea = options.containerArea as HTMLAreaElement
         render(this.containerArea, this.video, this.subtitles!, this._playbackSpeed, this._playbackSpeeds, this._videoCaption)
@@ -102,7 +104,9 @@ export class Videoary {
             this._buttons.captions?.classList.add('hidden')
             this._buttons.mobile.captions?.classList.add('hidden')
         }
-
+        
+        if(!this.theatreMode) this._buttons.theater?.parentElement?.classList.add('hidden')
+        
         await this.loadVideo(this.video?.source!)
         this.showLoader(false)
 
